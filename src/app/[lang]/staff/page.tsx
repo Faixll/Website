@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { connection } from 'next/server';
 import type { Lang } from '@/config/site';
-import { Header } from '@/components/Layout';
+import { SiteHeader } from '@/components/SiteHeader';
 import { StaffView } from '@/components/StaffView';
 import { getDict } from '@/lib/i18n';
 import { currentProfile } from '@/lib/supabase/server';
@@ -16,7 +16,7 @@ export default async function StaffPage({ params }: { params: Promise<{ lang: La
   const me = await currentProfile();
   return (
     <>
-      <Header lang={lang} />
+      <SiteHeader />
       <main id="main" className="container section">
         <div className="page-title"><h1>{t.staffTitle}</h1></div>
         {me?.role === 'staff' ? (

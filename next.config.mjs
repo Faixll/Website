@@ -9,6 +9,10 @@ const nextConfig = {
     // Arabic is the default language.
     return [{ source: '/', destination: '/ar', permanent: false }];
   },
+  experimental: {
+    // Tree-shake the icon set and motion so pages only ship what they use.
+    optimizePackageImports: ['@phosphor-icons/react', 'motion'],
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
   },

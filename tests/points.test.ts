@@ -41,24 +41,28 @@ describe('points rules', () => {
 });
 
 describe('totals with points', () => {
-  const lines = [line('lamb-local-mix', '2kg', 'mandi', 1)]; // 125.00
+  const lines = [line('hawar-local', 'bone', 'mandi', 2)]; // 2 kg × 59 = 118.00
   const alAin = { type: 'delivery' as const, emirate: 'al-ain' }; // fee 15, free above 200
 
   it('applies money off and keeps VAT inside the total', () => {
     const t = totals(lines, alAin, { discount: 25 });
-    assert.equal(t.subtotal, 125);
+    assert.equal(t.subtotal, 118);
     assert.equal(t.discount, 25);
     assert.equal(t.deliveryFee, 15);
-    assert.equal(t.total, 115);
-    assert.equal(t.vat, vatOf(115));
-    assert.equal(t.vat, 5.48);
+    assert.equal(t.total, 108);
+    assert.equal(t.vat, vatOf(108));
+    assert.equal(t.vat, 5.14);
+  });
+
+  it('prices half-kilos exactly', () => {
+    assert.equal(totals([line('calf-local', 'boneless', 'curry', 1.5)], null).subtotal, 52.5);
   });
 
   it('waives the delivery fee', () => {
     const t = totals(lines, alAin, { freeDelivery: true });
     assert.equal(t.deliveryFee, 0);
     assert.equal(t.baseDeliveryFee, 15);
-    assert.equal(t.total, 125);
+    assert.equal(t.total, 118);
   });
 
   it('never discounts below zero', () => {
@@ -66,9 +70,9 @@ describe('totals with points', () => {
   });
 
   it('bases free delivery threshold and minimum order on the subtotal before discount', () => {
-    const big = [line('lamb-local-mix', '3kg', 'mandi', 1), line('kofta', '1kg', 'asis', 1)]; // 180 + 48 = 228
+    const big = [line('hawar-local', 'boneless', 'mandi', 3), line('burger-meat', '5pc', 'asis', 1)]; // 207 + 50 = 257
     const t = totals(big, alAin, { discount: 50 });
-    assert.equal(t.deliveryFee, 0, 'still free: 228 ≥ 200');
-    assert.equal(t.total, 178);
+    assert.equal(t.deliveryFee, 0, 'still free: 257 ≥ 200');
+    assert.equal(t.total, 207);
   });
 });

@@ -6,7 +6,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { site } from '@/config/site';
-import { cuts, productById, productImage } from '@/data/catalog';
+import { productById } from '@/data/catalog';
+import { lineLabel } from '@/lib/lines';
+import { ProductImage } from './ProductImage';
 import { branches, emirates } from '@/data/places';
 import { money } from '@/lib/format';
 import { fulfilmentOf, priceOrder, validateOrder, type FieldErrors, type OrderInput, type PaymentMethod, type PricedOrder } from '@/lib/order';
@@ -19,7 +21,8 @@ import { SlotPicker } from './HomeParts';
 import { Icon } from './Icon';
 import { useStore } from './StoreProvider';
 
-const PK = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+/** Online payments are off until Stripe is connected and NEXT_PUBLIC_ONLINE_PAYMENTS_ENABLED=true (see src/config/site.ts). */
+const PK = site.onlinePayments ? process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY : undefined;
 let stripePromise: Promise<StripeJs | null> | null = null;
 const getStripe = () => (stripePromise ??= PK ? loadStripe(PK) : Promise.resolve(null));
 
@@ -183,7 +186,7 @@ function CheckoutForm({ form, setForm, totals, priced, disc, setDisc, discError,
     if (!res.ok) {
       if (data.fields) setErrors(data.fields);
       if (t.pointsErrors[data.error]) { setDisc({ redeem: NO_REDEMPTION, promo: '' }); refreshAccount(); }
-      throw new Error(data.error === 'payments_not_configured' ? t.paymentsNotConfigured : t.pointsErrors[data.error] ?? t.orderError);
+      throw new Error(t.pointsErrors[data.error] ?? t.orderError);
     }
     // The cart is cleared on the confirmation page once the order is confirmed.
     try { sessionStorage.setItem('hab-pending', JSON.stringify({ orderId: data.orderId, lines: totals.lines })); } catch { /* ignore */ }
@@ -202,7 +205,7 @@ function CheckoutForm({ form, setForm, totals, priced, disc, setDisc, discError,
   };
 
   const payWithStripe = async () => {
-    if (!stripe || !elements) throw new Error(t.paymentsNotConfigured);
+    if (!stripe || !elements) throw new Error(t.orderError);
     const { error: submitError } = await elements.submit();
     if (submitError) throw new Error(submitError.message ?? t.orderError);
     const { orderId, clientSecret, pointsEarnable } = await createOrder();
@@ -390,9 +393,9 @@ function CheckoutForm({ form, setForm, totals, priced, disc, setDisc, discError,
         <section className="panel-card" aria-labelledby="h-pay">
           <h2 id="h-pay"><span className="step-n num">5</span>{t.payment}</h2>
           <div className="options" role="radiogroup" aria-label={t.payment}>
-            {(['wallet', 'card', 'cod'] as PaymentMethod[]).map((m) => (
+            {((PK ? ['wallet', 'card', 'cod'] : ['cod']) as PaymentMethod[]).map((m) => (
               <label key={m} className="option">
-                <input type="radio" name="payment" value={m} checked={form.payment === m} disabled={m !== 'cod' && !PK} onChange={() => set('payment', m)} />
+                <input type="radio" name="payment" value={m} checked={form.payment === m} onChange={() => set('payment', m)} />
                 <span className="o-main">
                   <span className="o-title">{m === 'wallet' ? t.wallet : m === 'card' ? t.card : isPickup ? t.codPickup : t.codDelivery}</span>
                   {m === 'card' && <span className="o-sub">Visa · Mastercard</span>}
@@ -400,7 +403,6 @@ function CheckoutForm({ form, setForm, totals, priced, disc, setDisc, discError,
               </label>
             ))}
           </div>
-          {!PK && <p className="alert">{t.paymentsNotConfigured}</p>}
           {PK && form.payment === 'card' && (
             <PaymentElement options={{ layout: 'tabs', wallets: { applePay: 'never', googlePay: 'never' }, fields: { billingDetails: { name: 'auto' } } }} />
           )}
@@ -421,10 +423,10 @@ function CheckoutForm({ form, setForm, totals, priced, disc, setDisc, discError,
                 const p = productById(l.productId)!;
                 return (
                   <div className="s-line" key={l.key}>
-                    <img src={productImage(p)} alt="" width={48} height={48} loading="lazy" />
+                    <span className="thumb"><ProductImage p={p} lang={lang} sizes="48px" /></span>
                     <div>
-                      <span>{p.name[lang]} <span className="num">× {l.qty}</span></span>
-                      <small>{p.sizes.find((s) => s.id === l.sizeId)!.name[lang]} · {cuts[l.cutId].name[lang]}{l.notes ? ` · ${l.notes}` : ''}</small>
+                      <span>{p.name[lang]}{!p.byWeight && <span className="num"> × {l.qty}</span>}</span>
+                      <small>{lineLabel(l, lang, t, { withName: false })}{l.notes ? ` · ${l.notes}` : ''}</small>
                     </div>
                     <span className="num">{money(linePrice(l), lang)}</span>
                   </div>

@@ -1,16 +1,21 @@
 import type { Metadata, Viewport } from 'next';
-import { IBM_Plex_Sans_Arabic, Readex_Pro } from 'next/font/google';
+import { IBM_Plex_Sans, IBM_Plex_Sans_Arabic, Lalezar, Noto_Kufi_Arabic, Playfair_Display } from 'next/font/google';
 import { notFound } from 'next/navigation';
 import { LANGS, site, type Lang } from '@/config/site';
-import { BottomNav, CartBar, CartDrawer, Toast } from '@/components/Chrome';
-import { Footer, TopBar } from '@/components/Layout';
 import { AccountProvider } from '@/components/AccountProvider';
+import { CartDrawer, MiniCart, NavBars, Toast, WhatsAppFab } from '@/components/Chrome';
+import { AnnouncementBar, Footer } from '@/components/Layout';
+import { MotionProvider } from '@/components/Motion';
 import { StoreProvider } from '@/components/StoreProvider';
 import { getDict, isLang } from '@/lib/i18n';
 import '../globals.css';
 
-const plex = IBM_Plex_Sans_Arabic({ subsets: ['arabic', 'latin'], weight: ['400', '500', '600', '700'], variable: '--font-plex', display: 'swap' });
-const readex = Readex_Pro({ subsets: ['arabic', 'latin'], weight: ['500', '600', '700'], variable: '--font-readex', display: 'swap' });
+/* Fonts (Google, self-hosted by next/font, display: swap). Only the subsets and weights actually used are loaded. */
+const playfair = Playfair_Display({ subsets: ['latin'], weight: ['700', '800'], variable: '--font-playfair', display: 'swap' });
+const plex = IBM_Plex_Sans({ subsets: ['latin'], weight: ['400', '500', '600'], variable: '--font-plex', display: 'swap' });
+const plexAr = IBM_Plex_Sans_Arabic({ subsets: ['arabic', 'latin'], weight: ['400', '500', '600'], variable: '--font-plex-ar', display: 'swap' });
+const kufi = Noto_Kufi_Arabic({ subsets: ['arabic'], weight: ['700'], variable: '--font-kufi', display: 'swap' });
+const lalezar = Lalezar({ subsets: ['arabic', 'latin'], weight: '400', variable: '--font-lalezar', display: 'swap' });
 
 /** Only /ar and /en exist; anything else is a 404. */
 export const dynamicParams = false;
@@ -32,25 +37,30 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   };
 }
 
-export const viewport: Viewport = { themeColor: '#8C1D2C', width: 'device-width', initialScale: 1 };
+export const viewport: Viewport = { themeColor: '#141110', width: 'device-width', initialScale: 1, viewportFit: 'cover' };
 
 export default async function RootLayout({ children, params }: { children: React.ReactNode; params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   if (!isLang(lang)) notFound();
   const t = getDict(lang as Lang);
+  // Load only the families each language uses.
+  const fonts = lang === 'ar' ? [plexAr, kufi, lalezar] : [plex, playfair];
   return (
-    <html lang={lang} dir={t.dir} className={`${plex.variable} ${readex.variable}`}>
+    <html lang={lang} dir={t.dir} className={fonts.map((f) => f.variable).join(' ')}>
       <body>
         <StoreProvider lang={lang as Lang}>
           <AccountProvider>
-          <a href="#main" className="skip">{t.skip}</a>
-          <TopBar lang={lang as Lang} />
-          {children}
-          <Footer lang={lang as Lang} />
-          <CartBar />
-          <BottomNav />
-          <CartDrawer />
-          <Toast />
+            <MotionProvider>
+              <a href="#main" className="skip">{t.skip}</a>
+              <AnnouncementBar lang={lang as Lang} />
+              {children}
+              <Footer lang={lang as Lang} />
+              <MiniCart />
+              <WhatsAppFab />
+              <NavBars />
+              <CartDrawer />
+              <Toast />
+            </MotionProvider>
           </AccountProvider>
         </StoreProvider>
       </body>

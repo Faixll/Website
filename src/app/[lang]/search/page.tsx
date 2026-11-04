@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import type { Lang } from '@/config/site';
 import { categories, type CategoryId } from '@/data/catalog';
-import { CategoryTabs, Header } from '@/components/Layout';
 import { SearchResults } from '@/components/SearchResults';
+import { SiteHeader } from '@/components/SiteHeader';
 import { getDict } from '@/lib/i18n';
 import type { Filters } from '@/lib/search';
 
@@ -14,30 +14,27 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: Lan
 }
 
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? '';
-const numOrNull = (v: string) => (v !== '' && Number.isFinite(Number(v)) ? Math.max(0, Number(v)) : null);
 
 export default async function SearchPage({ params, searchParams }: { params: Promise<{ lang: Lang }>; searchParams: SP }) {
-  const { lang } = await params;
+  await params;
   const sp = await searchParams;
   const cat = one(sp.cat);
-  const storage = one(sp.storage);
   const sort = one(sp.sort);
   const filters: Filters = {
     q: one(sp.q).slice(0, 80),
     cat: categories.some((c) => c.id === cat) ? (cat as CategoryId) : '',
-    storage: storage === 'fresh' || storage === 'frozen' ? storage : '',
-    min: numOrNull(one(sp.min)),
-    max: numOrNull(one(sp.max)),
-    inStock: one(sp.stock) === '1',
+    storage: '',
+    min: null,
+    max: null,
+    inStock: false,
     sort: (['price-asc', 'price-desc', 'name'] as const).find((s) => s === sort) ?? 'relevance',
   };
 
   return (
     <>
-      <Header lang={lang} q={filters.q} />
-      <CategoryTabs lang={lang} active={filters.cat || (filters.q ? undefined : 'all')} />
-      <main id="main" className="container section">
-        <SearchResults initial={filters} />
+      <SiteHeader hideSearch activeCat={filters.cat || undefined} />
+      <main id="main" className="container section" style={{ paddingTop: 'var(--s5)' }}>
+        <SearchResults initial={filters} autoFocus={one(sp.focus) === '1'} />
       </main>
     </>
   );

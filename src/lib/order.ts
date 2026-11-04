@@ -3,12 +3,12 @@
  * The server never trusts prices from the browser: totals are recomputed from the catalogue.
  */
 import { site, type Lang } from '@/config/site';
-import { cuts, productById, type CutId } from '@/data/catalog';
+import { allowedCuts, productById, validQty, type CutId } from '@/data/catalog';
 import { branchById, emirates } from '@/data/places';
 import { normaliseUaeMobile } from './format';
 import { checkRedemption, type Redemption } from './points';
 import { checkPromo } from './promo';
-import { lineKey, MAX_QTY, totals, type CartLine, type Fulfilment } from './pricing';
+import { lineKey, totals, type CartLine, type Fulfilment } from './pricing';
 import { slotAvailable, slotDays } from './uae-time';
 
 export type PaymentMethod = 'wallet' | 'card' | 'cod';
@@ -64,9 +64,9 @@ export function cleanLines(lines: OrderInput['lines']): CartLine[] {
   return lines.slice(0, 50).flatMap((l) => {
     const p = productById(String(l?.productId));
     if (!p || p.stock === 'out') return [];
-    if (!p.sizes.some((s) => s.id === l.sizeId) || !p.cuts.includes(l.cutId as CutId) || !(l.cutId in cuts)) return [];
-    const qty = Math.floor(Number(l.qty));
-    if (!(qty >= 1 && qty <= MAX_QTY)) return [];
+    if (!p.sizes.some((s) => s.id === l.sizeId) || !allowedCuts(p).includes(l.cutId as CutId)) return [];
+    const qty = Number(l.qty);
+    if (!validQty(p, qty)) return [];
     const notes = String(l.notes ?? '').slice(0, 200);
     return [{ productId: p.id, sizeId: l.sizeId, cutId: l.cutId as CutId, notes, qty, key: lineKey(p.id, l.sizeId, l.cutId, notes) }];
   });

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import type { Lang } from '@/config/site';
 import { AccountPage } from '@/components/AccountView';
-import { Header } from '@/components/Layout';
+import { SiteHeader } from '@/components/SiteHeader';
 import { getDict } from '@/lib/i18n';
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: Lang }> }): Promise<Metadata> {
@@ -14,7 +14,7 @@ export default async function Page({ params }: { params: Promise<{ lang: Lang }>
   const t = getDict(lang);
   return (
     <>
-      <Header lang={lang} />
+      <SiteHeader />
       <main id="main" className="container section">
         <h1 className="sr-only">{t.account}</h1>
         <AccountPage />

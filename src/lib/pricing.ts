@@ -14,7 +14,6 @@ export type CartLine = {
 export const lineKey = (productId: string, sizeId: string, cutId: string, notes: string) =>
   [productId, sizeId, cutId, notes.trim()].join('|');
 
-export const MAX_QTY = 20;
 
 /** Unit price (one item) for a product with the chosen size and cut. */
 export function unitPrice(p: Product, sizeId: string, cutId: CutId): number {

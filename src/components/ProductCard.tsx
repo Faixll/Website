@@ -1,83 +1,95 @@
 'use client';
 
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import Link from 'next/link';
-import { productImage, unitLabel, wasPrice, type Product } from '@/data/catalog';
+import { useState } from 'react';
+import { discountPct, qtyRule, wasPrice, type Product } from '@/data/catalog';
 import { money } from '@/lib/format';
-import { lineKey } from '@/lib/pricing';
-import { fromPrice, fromSize } from '@/lib/search';
+import { fromSize } from '@/lib/search';
 import { Icon } from './Icon';
-import { Stepper } from './Stepper';
-import { WasPrice } from './WasPrice';
+import { EASE } from './Motion';
+import { ProductImage } from './ProductImage';
 import { defaultLine, useStore } from './StoreProvider';
 
-export function StockBadges({ p }: { p: Product }) {
+export function StockBadges({ p, withDiscount = true }: { p: Product; withDiscount?: boolean }) {
   const { t } = useStore();
+  const pct = discountPct(fromSize(p));
   return (
     <>
-      {p.stock === 'out' ? (
-        <span className="badge badge-out">{t.out}</span>
-      ) : (
-        <span className={`badge ${p.storage === 'fresh' ? 'badge-fresh' : 'badge-frozen'}`}>{p.storage === 'fresh' ? t.fresh : t.frozen}</span>
-      )}
-      {p.stock === 'low' && <span className="badge badge-low">{t.low}</span>}
+      {p.stock === 'out' && <span className="badge badge-out">{t.out}</span>}
+      {p.stock !== 'out' && withDiscount && pct > 0 && <span className="badge badge-discount num" data-testid="discount-badge">{t.discountBadge(pct)}</span>}
+      {p.stock !== 'out' && p.storage === 'fresh' && <span className="badge badge-fresh">{t.fresh}</span>}
+      {p.stock !== 'out' && p.storage === 'frozen' && <span className="badge badge-frozen">{t.frozen}</span>}
+      {p.stock === 'low' && <span className="badge badge-limited">{t.low}</span>}
     </>
   );
 }
 
-/**
- * "Add" button that becomes a quantity stepper once the product's default option is in the cart.
- * Products with several sizes still add their first size; the product page offers the full choice.
- */
-export function AddControl({ product: p, compact }: { product: Product; compact?: boolean }) {
-  const { t, lang, lines, add, setQty, ready, showToast } = useStore();
-  const d = defaultLine(p.id)!;
-  const key = lineKey(d.productId, d.sizeId, d.cutId, d.notes);
-  const qty = ready ? lines.find((l) => l.key === key)?.qty ?? 0 : 0;
+/** Unit under the price: "per kg", the pack name, or "per meal". */
+export function unitText(p: Product, t: ReturnType<typeof useStore>['t'], lang: 'ar' | 'en') {
+  if (p.unit === 'kg') return t.perKg;
+  if (p.unit === 'meal') return t.perMeal;
+  return fromSize(p).name[lang];
+}
 
-  if (p.stock === 'out') {
-    return (
-      <Link href={`/${lang}/product/${p.id}#notify`} className={`btn btn-ghost${compact ? '' : ''}`} style={{ paddingInline: 12, fontSize: 14 }}>
-        <Icon name="bell" />
-        {compact ? <span className="sr-only">{t.notifyMe}</span> : t.notifyMe}
-      </Link>
-    );
-  }
-  if (qty > 0) return <Stepper qty={qty} onChange={(q) => setQty(key, q)} label={p.name[lang]} />;
+/** Round red quick-add: adds the default option; turns into a check with a short bounce. */
+export function QuickAdd({ p, className = 'quick-add', size = 22 }: { p: Product; className?: string; size?: number }) {
+  const { t, lang, add, showToast } = useStore();
+  const [done, setDone] = useState(false);
+  const reduce = useReducedMotion();
+  if (p.stock === 'out') return null;
   return (
     <button
       type="button"
-      className="btn btn-primary"
-      style={{ paddingInline: compact ? 12 : 16 }}
-      onClick={() => { add(d); showToast(t.addedToCart); }}
+      className={`${className}${done ? ' done' : ''}`}
       aria-label={`${t.add}: ${p.name[lang]}`}
+      data-testid="quick-add"
+      onClick={(e) => {
+        e.preventDefault();
+        add(defaultLine(p.id)!, qtyRule(p).def);
+        showToast(t.addedToCart);
+        setDone(true);
+        setTimeout(() => setDone(false), 1200);
+      }}
     >
-      <Icon name="plus" />
-      {t.add}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={done ? 'check' : 'plus'}
+          style={{ display: 'grid' }}
+          initial={{ scale: reduce ? 1 : 0.6, opacity: 0 }}
+          animate={{ scale: reduce ? 1 : [0.6, 1.15, 1], opacity: 1 }}
+          exit={{ scale: reduce ? 1 : 0.6, opacity: 0 }}
+          transition={{ duration: 0.3, ease: EASE }}
+        >
+          <Icon name={done ? 'check' : 'plus'} size={size} weight="bold" />
+        </motion.span>
+      </AnimatePresence>
     </button>
   );
 }
 
 export function ProductCard({ p, priority }: { p: Product; priority?: boolean }) {
   const { t, lang } = useStore();
+  const s = fromSize(p);
   const multi = p.sizes.length > 1;
   return (
-    <article className={`card${p.stock === 'out' ? ' is-out' : ''}`}>
+    <article className="card" data-testid="product-card" data-product={p.id}>
       <div className="media">
-        <img src={productImage(p)} alt="" width={400} height={300} loading={priority ? 'eager' : 'lazy'} decoding="async" />
+        <ProductImage p={p} lang={lang} sizes="(min-width: 1100px) 25vw, (min-width: 768px) 33vw, 50vw" priority={priority} />
         <div className="badges"><StockBadges p={p} /></div>
+        <QuickAdd p={p} />
       </div>
       <div className="body">
         <h3><Link href={`/${lang}/product/${p.id}`}>{p.name[lang]}</Link></h3>
-        <p className="meta">{p.sizes[0].name[lang]}{multi ? ` · ${t.moreSizes(p.sizes.length - 1)}` : ` · ${p.origin[lang]}`}</p>
-        <div className="foot">
-          <p className="price num">
-            {multi && <small>{t.from} </small>}
-            {money(fromPrice(p), lang)}
-            <span className="sr-only"> {t.per} {unitLabel[p.unit][lang]}</span>
-            <WasPrice amount={wasPrice(fromSize(p))} />
-          </p>
-          <AddControl product={p} />
+        <div className="price-row">
+          <span className="price num" data-testid="card-price">
+            {multi && <>{t.from} </>}{money(s.price, lang)}
+          </span>
+          {wasPrice(s) != null && (
+            <span className="was num"><span className="sr-only">{t.wasLabel} </span><s>{money(wasPrice(s)!, lang)}</s></span>
+          )}
         </div>
+        <span className="unit">{unitText(p, t, lang)}</span>
       </div>
     </article>
   );

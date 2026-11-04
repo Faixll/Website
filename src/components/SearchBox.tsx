@@ -3,11 +3,12 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { productImage, wasPrice } from '@/data/catalog';
+import { wasPrice } from '@/data/catalog';
 import { money } from '@/lib/format';
 import { fromPrice, fromSize, searchCategories, searchProducts } from '@/lib/search';
-import { Icon } from './Icon';
-import { AddControl } from './ProductCard';
+import { categoryIcon, Icon } from './Icon';
+import { ProductImage } from './ProductImage';
+import { QuickAdd } from './ProductCard';
 import { useStore } from './StoreProvider';
 import { WasPrice } from './WasPrice';
 
@@ -61,7 +62,7 @@ export function SearchBox({ initial = '' }: { initial?: string }) {
         onSubmit={(e) => { e.preventDefault(); go(`/${lang}/search${query ? `?q=${encodeURIComponent(query)}` : ''}`); }}
       >
         <label htmlFor={`${listId}-input`} className="sr-only">{t.searchLabel}</label>
-        <Icon name="search" className="icon s-icon" />
+        <Icon name="search" size={20} className="s-icon" />
         <input
           id={`${listId}-input`}
           className="input"
@@ -82,7 +83,7 @@ export function SearchBox({ initial = '' }: { initial?: string }) {
         />
         {q && (
           <button type="button" className="icon-btn s-clear" style={{ border: 0, background: 'none' }} aria-label={t.close} onClick={() => { setQ(''); setOpen(false); }}>
-            <Icon name="close" />
+            <Icon name="close" size={20} />
           </button>
         )}
       </form>
@@ -94,7 +95,7 @@ export function SearchBox({ initial = '' }: { initial?: string }) {
               <div className="s-title" aria-hidden>{t.categories}</div>
               {cats.map((c, i) => (
                 <Link key={c.id} id={options[i].id} role="option" aria-selected={active === i} className="s-cat" href={options[i].href} onClick={() => setOpen(false)}>
-                  <Icon name="grid" />
+                  <Icon name={categoryIcon[c.id]} size={20} />
                   {hl(c.name)}
                 </Link>
               ))}
@@ -107,12 +108,12 @@ export function SearchBox({ initial = '' }: { initial?: string }) {
                 const i = cats.length + j;
                 return (
                   <div key={p.id} id={options[i].id} role="option" aria-selected={active === i} className="s-item">
-                    <img src={productImage(p)} alt="" width={44} height={44} loading="lazy" />
+                    <span className="s-thumb" style={{ position: 'relative', overflow: 'hidden' }}><ProductImage p={p} lang={lang} sizes="44px" /></span>
                     <Link href={options[i].href} onClick={() => setOpen(false)} tabIndex={-1}>
                       <span className="s-name">{hl(p.name[lang])}</span>
                       <span className="s-price num">{p.stock === 'out' ? t.out : <>{`${p.sizes.length > 1 ? t.from + ' ' : ''}${money(fromPrice(p), lang)}`} <WasPrice amount={wasPrice(fromSize(p))} /></>}</span>
                     </Link>
-                    <AddControl product={p} compact />
+                    <QuickAdd p={p} className="icon-btn" size={20} />
                   </div>
                 );
               })}

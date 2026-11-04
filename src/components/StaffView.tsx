@@ -58,7 +58,7 @@ export function StaffView() {
             <select id="st-status" className="select" style={{ width: 'auto' }} value={status} onChange={(e) => setStatus(e.target.value)}>
               {STATUSES.map((s) => <option key={s} value={s}>{s ? t.statuses[s] : t.allStatuses}</option>)}
             </select>
-            <button type="button" className="btn btn-ghost" onClick={load}><Icon name="repeat" />{t.refresh}</button>
+            <button type="button" className="btn btn-ghost" onClick={load}><Icon name="search" size={20} />{t.refresh}</button>
           </div>
         </div>
         <div style={{ overflowX: 'auto' }}>

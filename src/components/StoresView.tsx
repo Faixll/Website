@@ -19,20 +19,20 @@ export function BranchesWithMap() {
   const [sel, setSel] = useState(branches[0].id);
   const b = branches.find((x) => x.id === sel)!;
   return (
-    <div className="stores-layout">
-      <div className="branches">
+    <div className="branches with-map">
+      <div className="stack" style={{ gap: 'var(--s4)' }}>
         {branches.map((x) => (
-          <BranchCard key={x.id} b={x} showHours selected={x.id === sel} onSelect={() => {
+          <BranchCard key={x.id} b={x} selected={branches.length > 1 && x.id === sel} onSelect={branches.length > 1 ? () => {
             setSel(x.id);
-            if (!matchMedia('(min-width: 960px)').matches) document.querySelector('.map-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }} />
+            if (!matchMedia('(min-width: 900px)').matches) document.querySelector('.map-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          } : undefined} />
         ))}
       </div>
-      <div className="map-wrap-outer stack" style={{ gap: 8 }}>
+      <div className="stack" style={{ gap: 8 }}>
         <div className="map-wrap">
           <iframe key={b.id} title={`${t.map}: ${b.name[lang]}`} src={osm(b.lat, b.lng)} loading="lazy" referrerPolicy="no-referrer" />
         </div>
-        <a className="btn btn-ghost" href={directionsUrl(b)} target="_blank" rel="noopener"><Icon name="pin" />{b.name[lang]} · {t.directions}</a>
+        <a className="btn btn-ghost" href={directionsUrl(b)} target="_blank" rel="noopener"><Icon name="external" size={20} />{b.name[lang]} · {t.openInMaps}</a>
       </div>
     </div>
   );
@@ -50,7 +50,7 @@ export function ContactTiles() {
     <div className="contact-grid">
       {tiles.map((x) => (
         <a key={x.label} className="contact-tile" href={x.href} {...(x.ext ? { target: '_blank', rel: 'noopener' } : {})}>
-          <span className="c-ico"><Icon name={x.icon} /></span>
+          <span className="c-ico"><Icon name={x.icon} size={22} /></span>
           <b>{x.label}</b>
           <small className={x.ltr ? 'ltr' : undefined}>{x.sub}</small>
         </a>

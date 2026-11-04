@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { site, type Lang } from '@/config/site';
 import { branches } from '@/data/places';
-import { Header } from '@/components/Layout';
+import { SiteHeader } from '@/components/SiteHeader';
 import { BranchesWithMap, ContactForm, ContactTiles } from '@/components/StoresView';
 import { getDict } from '@/lib/i18n';
 
@@ -26,7 +26,7 @@ export default async function StoresPage({ params }: { params: Promise<{ lang: L
 
   return (
     <>
-      <Header lang={lang} />
+      <SiteHeader />
       <main id="main" className="container">
         <div className="page-title">
           <h1>{t.storesTitle}</h1>

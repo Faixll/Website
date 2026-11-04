@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     apartment: str(b.apartment, 40),
     branchId: str(b.branchId, 40),
     slot: b.slot ? { date: str(b.slot.date, 10), slotId: str(b.slot.slotId, 10) } : null,
-    payment: b.payment === 'card' || b.payment === 'wallet' ? b.payment : 'cod',
+    payment: site.onlinePayments && (b.payment === 'card' || b.payment === 'wallet') ? b.payment : 'cod',
     lines: Array.isArray(b.lines) ? b.lines : [],
   };
   const redeem: Redemption = b.redeem

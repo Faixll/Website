@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useId, useState } from 'react';
 import { site } from '@/config/site';
-import { productById, type CutId } from '@/data/catalog';
+import { allowedCuts, productById, type CutId } from '@/data/catalog';
 import { money, normaliseUaeMobile, phoneDisplay } from '@/lib/format';
 import { nextReward } from '@/lib/points';
 import { supabaseBrowser } from '@/lib/supabase/browser';
@@ -166,7 +166,7 @@ export function AccountDashboard() {
     let added = 0;
     for (const l of o.details.lines ?? []) {
       const p = productById(l.productId);
-      if (!p || p.stock === 'out' || !p.sizes.some((s) => s.id === l.sizeId) || !p.cuts.includes(l.cutId as CutId)) continue;
+      if (!p || p.stock === 'out' || !p.sizes.some((s) => s.id === l.sizeId) || !allowedCuts(p).includes(l.cutId as CutId)) continue;
       add({ productId: l.productId, sizeId: l.sizeId, cutId: l.cutId as CutId, notes: l.notes ?? '' }, l.qty);
       added++;
     }

@@ -1,5 +1,5 @@
 import type { Lang } from '@/config/site';
-import { Header } from '@/components/Layout';
+import { SiteHeader } from '@/components/SiteHeader';
 import { OrderConfirmation } from '@/components/OrderConfirmation';
 
 export const metadata = { robots: { index: false } };
@@ -14,7 +14,7 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
   const paid = sp.paid === '1' || sp.redirect_status === 'succeeded';
   return (
     <>
-      <Header lang={lang} />
+      <SiteHeader />
       <main id="main" className="container">
         <OrderConfirmation id={safeId} paid={paid} points={Math.max(0, Math.min(100000, Number(sp.pts) || 0))} />
       </main>

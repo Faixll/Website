@@ -1,68 +1,65 @@
 import Link from 'next/link';
 import type { Lang } from '@/config/site';
-import { branches } from '@/data/places';
 import { categories, products } from '@/data/catalog';
+import { branches } from '@/data/places';
 import { BranchCard } from '@/components/BranchCard';
-import { HeroPicker, ReorderStrip } from '@/components/HomeParts';
-import { CategoryTabs, Header, TrustRow } from '@/components/Layout';
+import { CategoryChips, Hero } from '@/components/HomeParts';
+import { TrustStrip } from '@/components/Layout';
+import { Reveal } from '@/components/Motion';
 import { ProductCard } from '@/components/ProductCard';
+import { SiteHeader } from '@/components/SiteHeader';
 import { getDict } from '@/lib/i18n';
 
 export default async function Home({ params }: { params: Promise<{ lang: Lang }> }) {
   const { lang } = await params;
   const t = getDict(lang);
-  const popular = products.filter((p) => p.popular).slice(0, 4);
-  const byCat = categories.map((c) => ({ c, items: products.filter((p) => p.category === c.id) }));
+  const sections = categories.map((c) => ({ c, items: products.filter((p) => p.category === c.id) })).filter((s) => s.items.length);
+  // No product appears twice on the home page: "Most ordered" only shows popular products that are
+  // not already listed in a category section below (so with today's catalogue it stays hidden).
+  const inSections = new Set(sections.flatMap((s) => s.items.map((p) => p.id)));
+  const mostOrdered = products.filter((p) => p.popular && !inSections.has(p.id));
 
   return (
     <>
-      <Header lang={lang} />
-      <CategoryTabs lang={lang} active="all" />
+      <SiteHeader />
       <main id="main">
-        <section className="container hero">
-          <div className="hero-card">
-            <div className="stack">
-              <h1>{t.heroTitle}</h1>
-              <p>{t.heroSub}</p>
+        <Hero />
+
+        <section className="container section" style={{ paddingBottom: 0 }} aria-label={t.trust3[0][0]}>
+          <TrustStrip lang={lang} />
+        </section>
+
+        <div style={{ marginTop: 'var(--s6)' }}>
+          <CategoryChips mode="scroll" sticky />
+        </div>
+
+        {mostOrdered.length > 0 && (
+          <section className="container section" aria-labelledby="most-ordered">
+            <div className="section-head"><h2 id="most-ordered">{t.mostOrdered}</h2></div>
+            <div className="hscroll row">
+              {mostOrdered.map((p, i) => <Reveal key={p.id} index={i}><ProductCard p={p} /></Reveal>)}
             </div>
-            <HeroPicker />
-          </div>
-        </section>
+          </section>
+        )}
 
-        <ReorderStrip />
-
-        <section className="container section" aria-labelledby="popular">
-          <div className="section-head">
-            <h2 id="popular">{lang === 'ar' ? 'الأكثر طلباً' : 'Most ordered'}</h2>
-            <Link href={`/${lang}/search`}>{t.allProducts}</Link>
-          </div>
-          <div className="grid">
-            {popular.map((p, i) => <ProductCard key={p.id} p={p} priority={i < 2} />)}
-          </div>
-        </section>
-
-        {byCat.map(({ c, items }) => (
-          <section key={c.id} className="container section" style={{ paddingTop: 0 }} aria-labelledby={`cat-${c.id}`}>
+        {sections.map(({ c, items }, si) => (
+          <section key={c.id} id={`cat-${c.id}`} className={`container section${si > 0 ? ' cv' : ''}`} aria-labelledby={`h-${c.id}`}>
             <div className="section-head">
-              <h2 id={`cat-${c.id}`}>{c.name[lang]}</h2>
-              <Link href={`/${lang}/search?cat=${c.id}`}>{t.allProducts}</Link>
+              <h2 id={`h-${c.id}`}>{c.name[lang]}</h2>
+              <Link className="see-all" href={`/${lang}/search?cat=${c.id}`}>{t.seeAllCat}</Link>
             </div>
             <div className="grid">
-              {items.slice(0, 4).map((p) => <ProductCard key={p.id} p={p} />)}
+              {items.map((p, i) => <Reveal key={p.id} index={i}><ProductCard p={p} priority={si === 0 && i < 2} /></Reveal>)}
             </div>
           </section>
         ))}
 
-        <section className="container section" aria-label={t.trust[0][0]}>
-          <TrustRow lang={lang} />
-        </section>
-
-        <section className="container section" aria-labelledby="branches">
+        <section className="container section cv" aria-labelledby="branches">
           <div className="section-head">
             <h2 id="branches">{t.ourBranches}</h2>
-            <Link href={`/${lang}/stores`}>{t.allBranches}</Link>
+            <Link className="see-all" href={`/${lang}/stores`}>{t.allBranches}</Link>
           </div>
-          <div className="branches four">
+          <div className="branches">
             {branches.map((b) => <BranchCard key={b.id} b={b} />)}
           </div>
         </section>
