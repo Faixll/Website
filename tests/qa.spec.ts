@@ -16,7 +16,7 @@ const PAGES = [
 ];
 
 async function openCart(page: Page) {
-  const btn = page.locator('[data-testid="open-cart"], .cart-btn, .bottomnav button').filter({ visible: true }).first();
+  const btn = page.locator('[data-testid="open-cart"]').filter({ visible: true }).first();
   await btn.click();
   await expect(page.getByRole('dialog')).toBeVisible();
 }
@@ -84,7 +84,7 @@ test('order flow: add, change option, cart total = sum of lines, checkout shows 
   await settle(page);
   // change an option: pick the last choice in the first option group
   const group = page.locator('fieldset').first();
-  const options = group.locator('label, button[aria-pressed]');
+  const options = group.locator('button[role=radio]');
   if (await options.count() > 1) await options.last().click();
   await page.getByRole('button', { name: /أضف إلى السلة/ }).filter({ visible: true }).first().click();
   await addToCartFromProduct(page, 'ar', 'naimi-local');
@@ -138,7 +138,7 @@ test('C: sticky add-to-cart button on the product page has a text label', async 
   await page.setViewportSize(VIEWPORTS.phone);
   await page.goto('/ar/product/hawar-local');
   await settle(page);
-  const btn = page.locator('[data-testid="sticky-add"], .buybar .btn-outline').filter({ visible: true }).first();
+  const btn = page.locator('[data-testid="action-bar"] [data-testid="add-to-cart"]').filter({ visible: true }).first();
   await expect(btn).toBeVisible();
   expect((await btn.innerText()).trim()).toMatch(/أضف إلى السلة/);
 });

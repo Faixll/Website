@@ -451,7 +451,7 @@ body.hide-tabbar .wa-fab, body.has-actionbar .wa-fab { display: none; }
 .line .thumb { position: relative; width: 64px; height: 64px; border-radius: var(--r-img); overflow: hidden; flex: none; }
 .line .thumb .ph { font-size: 10px; padding: 4px; }
 .line .l-main { flex: 1; min-width: 0; display: grid; gap: 2px; }
-.line .l-name { font-weight: 600; text-decoration: none; }
+.line .l-name { font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; min-height: var(--tap); }
 .line .l-opts { font-size: 14px; color: var(--muted); }
 .line .l-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
 .empty { text-align: center; padding: 40px 16px; display: grid; gap: 12px; justify-items: center; color: var(--muted); }

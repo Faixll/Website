@@ -15,7 +15,7 @@ const playfair = Playfair_Display({ subsets: ['latin'], weight: ['700', '800'], 
 const plex = IBM_Plex_Sans({ subsets: ['latin'], weight: ['400', '500', '600'], variable: '--font-plex', display: 'swap' });
 const plexAr = IBM_Plex_Sans_Arabic({ subsets: ['arabic', 'latin'], weight: ['400', '500', '600'], variable: '--font-plex-ar', display: 'swap' });
 const kufi = Noto_Kufi_Arabic({ subsets: ['arabic'], weight: ['700'], variable: '--font-kufi', display: 'swap' });
-const lalezar = Lalezar({ subsets: ['arabic', 'latin'], weight: '400', variable: '--font-lalezar', display: 'swap' });
+const lalezar = Lalezar({ subsets: ['arabic'], weight: '400', variable: '--font-lalezar', display: 'swap' });
 
 /** Only /ar and /en exist; anything else is a 404. */
 export const dynamicParams = false;

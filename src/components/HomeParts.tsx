@@ -119,7 +119,7 @@ export function Hero() {
             <p className="sub">{t.heroSub}</p>
           </div>
           <div className="hero-photo" ref={photoRef}>
-            <motion.div className="photo" style={parallax ? { y } : undefined} data-testid="hero-photo">
+            <motion.div className="photo" style={{ y: parallax ? y : 0 }} data-testid="hero-photo">
               {/* Neutral placeholder until a real hero photo is added (use next/image with `priority` here). */}
               <div className="ph lg" aria-hidden />
             </motion.div>
