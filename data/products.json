@@ -1,0 +1,299 @@
+{
+  "currency": "AED",
+  "vatIncluded": true,
+  "note": "Prices come from Products_Price_List.xlsx and must not be changed. 'regular' is shown crossed out, 'offer' is what the customer pays.",
+  "categories": [
+    {
+      "id": "hawar",
+      "en": "Hawar",
+      "ar": "حوار"
+    },
+    {
+      "id": "sheep",
+      "en": "Sheep",
+      "ar": "خروف"
+    },
+    {
+      "id": "goat",
+      "en": "Goat",
+      "ar": "تيس"
+    },
+    {
+      "id": "calf",
+      "en": "Calf",
+      "ar": "عجل"
+    },
+    {
+      "id": "burgers",
+      "en": "Burgers",
+      "ar": "برجر"
+    },
+    {
+      "id": "meals",
+      "en": "Ready meals",
+      "ar": "وجبات جاهزة"
+    }
+  ],
+  "products": [
+    {
+      "id": "hawar-local",
+      "category": "hawar",
+      "type": "fresh-meat",
+      "unit": "kg",
+      "name": {
+        "en": "Local Hawar Meat",
+        "ar": "لحم حوار محلي"
+      },
+      "optionGroup": {
+        "id": "bone",
+        "label": {
+          "en": "Bone",
+          "ar": "العظم"
+        },
+        "options": [
+          {
+            "id": "bone-in",
+            "label": {
+              "en": "With bone",
+              "ar": "بعظم"
+            },
+            "regular": 69,
+            "offer": 59,
+            "sourceRank": 1
+          },
+          {
+            "id": "boneless",
+            "label": {
+              "en": "Boneless",
+              "ar": "بدون عظم"
+            },
+            "regular": 79,
+            "offer": 69,
+            "sourceRank": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "naimi-local",
+      "category": "sheep",
+      "type": "fresh-meat",
+      "unit": "kg",
+      "name": {
+        "en": "Local Naimi Meat",
+        "ar": "لحم خروف نعيمي محلي"
+      },
+      "regular": 79,
+      "offer": 69,
+      "sourceRank": 3
+    },
+    {
+      "id": "najdi-local",
+      "category": "sheep",
+      "type": "fresh-meat",
+      "unit": "kg",
+      "name": {
+        "en": "Local Najdi Meat",
+        "ar": "لحم خروف نجدي محلي"
+      },
+      "regular": 79,
+      "offer": 69,
+      "sourceRank": 4
+    },
+    {
+      "id": "harri-local",
+      "category": "sheep",
+      "type": "fresh-meat",
+      "unit": "kg",
+      "name": {
+        "en": "Local Harri Meat",
+        "ar": "لحم خروف حري محلي"
+      },
+      "regular": 85,
+      "offer": 75,
+      "sourceRank": 5
+    },
+    {
+      "id": "goat-local",
+      "category": "goat",
+      "type": "fresh-meat",
+      "unit": "kg",
+      "name": {
+        "en": "Local Goat Meat",
+        "ar": "لحم تيس عارضي محلي"
+      },
+      "regular": 65,
+      "offer": 55,
+      "sourceRank": 6
+    },
+    {
+      "id": "calf-local",
+      "category": "calf",
+      "type": "fresh-meat",
+      "unit": "kg",
+      "name": {
+        "en": "Local Calf Meat",
+        "ar": "لحم عجل محلي"
+      },
+      "optionGroup": {
+        "id": "bone",
+        "label": {
+          "en": "Bone",
+          "ar": "العظم"
+        },
+        "options": [
+          {
+            "id": "bone-in",
+            "label": {
+              "en": "With bone",
+              "ar": "بعظم"
+            },
+            "regular": 35,
+            "offer": 25,
+            "sourceRank": 7
+          },
+          {
+            "id": "boneless",
+            "label": {
+              "en": "Boneless",
+              "ar": "بدون عظم"
+            },
+            "regular": 45,
+            "offer": 35,
+            "sourceRank": 8
+          }
+        ]
+      }
+    },
+    {
+      "id": "burger-meat",
+      "category": "burgers",
+      "type": "packed",
+      "unit": "pack",
+      "name": {
+        "en": "Meat Burger",
+        "ar": "برجر لحم"
+      },
+      "optionGroup": {
+        "id": "pack",
+        "label": {
+          "en": "Pack size",
+          "ar": "حجم العبوة"
+        },
+        "options": [
+          {
+            "id": "5",
+            "label": {
+              "en": "5 Pieces",
+              "ar": "٥ قطع"
+            },
+            "regular": 60,
+            "offer": 50,
+            "sourceRank": 10
+          },
+          {
+            "id": "12",
+            "label": {
+              "en": "Box of 12",
+              "ar": "بوكس ١٢ قطعة"
+            },
+            "regular": 120,
+            "offer": 110,
+            "sourceRank": 9
+          }
+        ]
+      }
+    },
+    {
+      "id": "burger-hawar",
+      "category": "burgers",
+      "type": "packed",
+      "unit": "pack",
+      "name": {
+        "en": "Hawar Burger",
+        "ar": "برجر حوار"
+      },
+      "optionGroup": {
+        "id": "pack",
+        "label": {
+          "en": "Pack size",
+          "ar": "حجم العبوة"
+        },
+        "options": [
+          {
+            "id": "5",
+            "label": {
+              "en": "5 Pieces",
+              "ar": "٥ قطع"
+            },
+            "regular": 35,
+            "offer": 25,
+            "sourceRank": 12
+          },
+          {
+            "id": "6",
+            "label": {
+              "en": "Box of 6",
+              "ar": "بوكس ٦ قطعة"
+            },
+            "regular": 60,
+            "offer": 50,
+            "sourceRank": 14
+          },
+          {
+            "id": "12",
+            "label": {
+              "en": "Box of 12",
+              "ar": "بوكس ١٢ قطعة"
+            },
+            "regular": 120,
+            "offer": 110,
+            "sourceRank": 11
+          }
+        ]
+      }
+    },
+    {
+      "id": "burger-beef",
+      "category": "burgers",
+      "type": "packed",
+      "unit": "pack",
+      "name": {
+        "en": "Beef Burger",
+        "ar": "برجر لحم بقر"
+      },
+      "optionGroup": {
+        "id": "pack",
+        "label": {
+          "en": "Pack size",
+          "ar": "حجم العبوة"
+        },
+        "options": [
+          {
+            "id": "6",
+            "label": {
+              "en": "Box of 6",
+              "ar": "بوكس ٦ قطعة"
+            },
+            "regular": 60,
+            "offer": 50,
+            "sourceRank": 13
+          }
+        ]
+      }
+    },
+    {
+      "id": "kabsa-barriah-2",
+      "category": "meals",
+      "type": "meal",
+      "unit": "meal",
+      "name": {
+        "en": "Kabsa Barriah - 2 Persons",
+        "ar": "كبسة برية - لحم نعيمي محلي - شخصين"
+      },
+      "regular": 120,
+      "offer": 110,
+      "sourceRank": 15
+    }
+  ]
+}
