@@ -74,7 +74,7 @@ export const products: Product[] = [
     desc: { ar: 'لحم حوار (جمل صغير) محلي طازج، بعظم أو بدون عظم.', en: 'Fresh local hawar (young camel) meat, with bone or boneless.' },
     sizeLabel: bone,
     sizes: [
-      { id: 'bone', name: { ar: 'بعظم', en: 'With bone' }, price: 59, was: 69 },
+      { id: 'bone-in', name: { ar: 'بعظم', en: 'With bone' }, price: 59, was: 69 },
       { id: 'boneless', name: { ar: 'بدون عظم', en: 'Boneless' }, price: 69, was: 79 },
     ],
     cuts: CUTS,
@@ -116,7 +116,7 @@ export const products: Product[] = [
     desc: { ar: 'لحم عجل محلي طازج، بعظم أو بدون عظم.', en: 'Fresh local calf meat, with bone or boneless.' },
     sizeLabel: bone,
     sizes: [
-      { id: 'bone', name: { ar: 'بعظم', en: 'With bone' }, price: 25, was: 35 },
+      { id: 'bone-in', name: { ar: 'بعظم', en: 'With bone' }, price: 25, was: 35 },
       { id: 'boneless', name: { ar: 'بدون عظم', en: 'Boneless' }, price: 35, was: 45 },
     ],
     cuts: CUTS,
@@ -128,8 +128,8 @@ export const products: Product[] = [
     desc: { ar: 'برجر لحم، عبوة 5 قطع أو بوكس 12 قطعة.', en: 'Meat burgers, a pack of 5 or a box of 12.' },
     sizeLabel: packSize,
     sizes: [
-      { id: '5pc', name: { ar: '٥ قطع', en: '5 Pieces' }, price: 50, was: 60 },
-      { id: 'box12', name: { ar: 'بوكس ١٢ قطعة', en: 'Box of 12' }, price: 110, was: 120 },
+      { id: '5', name: { ar: '٥ قطع', en: '5 Pieces' }, price: 50, was: 60 },
+      { id: '12', name: { ar: 'بوكس ١٢ قطعة', en: 'Box of 12' }, price: 110, was: 120 },
     ],
     cuts: [],
   },
@@ -139,9 +139,9 @@ export const products: Product[] = [
     desc: { ar: 'برجر من لحم الحوار، عبوة 5 قطع أو بوكس 6 أو 12 قطعة.', en: 'Hawar (young camel) burgers, a pack of 5 or a box of 6 or 12.' },
     sizeLabel: packSize,
     sizes: [
-      { id: '5pc', name: { ar: '٥ قطع', en: '5 Pieces' }, price: 25, was: 35 },
-      { id: 'box6', name: { ar: 'بوكس ٦ قطعة', en: 'Box of 6' }, price: 50, was: 60 },
-      { id: 'box12', name: { ar: 'بوكس ١٢ قطعة', en: 'Box of 12' }, price: 110, was: 120 },
+      { id: '5', name: { ar: '٥ قطع', en: '5 Pieces' }, price: 25, was: 35 },
+      { id: '6', name: { ar: 'بوكس ٦ قطعة', en: 'Box of 6' }, price: 50, was: 60 },
+      { id: '12', name: { ar: 'بوكس ١٢ قطعة', en: 'Box of 12' }, price: 110, was: 120 },
     ],
     cuts: [],
   },
@@ -150,7 +150,7 @@ export const products: Product[] = [
     name: { ar: 'برجر لحم بقر', en: 'Beef Burger' },
     desc: { ar: 'برجر لحم بقر، بوكس 6 قطع.', en: 'Beef burgers, a box of 6.' },
     sizeLabel: packSize,
-    sizes: [{ id: 'box6', name: { ar: 'بوكس ٦ قطعة', en: 'Box of 6' }, price: 50, was: 60 }],
+    sizes: [{ id: '6', name: { ar: 'بوكس ٦ قطعة', en: 'Box of 6' }, price: 50, was: 60 }],
     cuts: [],
   },
   /* ---------- Ready meals ---------- */

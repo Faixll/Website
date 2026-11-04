@@ -41,7 +41,7 @@ describe('points rules', () => {
 });
 
 describe('totals with points', () => {
-  const lines = [line('hawar-local', 'bone', 'mandi', 2)]; // 2 kg × 59 = 118.00
+  const lines = [line('hawar-local', 'bone-in', 'mandi', 2)]; // 2 kg × 59 = 118.00
   const alAin = { type: 'delivery' as const, emirate: 'al-ain' }; // fee 15, free above 200
 
   it('applies money off and keeps VAT inside the total', () => {
@@ -70,7 +70,7 @@ describe('totals with points', () => {
   });
 
   it('bases free delivery threshold and minimum order on the subtotal before discount', () => {
-    const big = [line('hawar-local', 'boneless', 'mandi', 3), line('burger-meat', '5pc', 'asis', 1)]; // 207 + 50 = 257
+    const big = [line('hawar-local', 'boneless', 'mandi', 3), line('burger-meat', '5', 'asis', 1)]; // 207 + 50 = 257
     const t = totals(big, alAin, { discount: 50 });
     assert.equal(t.deliveryFee, 0, 'still free: 257 ≥ 200');
     assert.equal(t.total, 207);

@@ -37,9 +37,13 @@ const maxFor = (productId: string) => { const p = productById(productId); return
 const KEY = 'hab-store-v1';
 
 /** Drop lines whose product, size or cut no longer exists in the catalogue. */
+/** Option ids were renamed to match data/products.json; carts saved before that keep working. */
+const OLD_OPTION_IDS: Record<string, string> = { bone: 'bone-in', '5pc': '5', box6: '6', box12: '12' };
+
 function sanitise(lines: unknown): CartLine[] {
   if (!Array.isArray(lines)) return [];
-  return lines.flatMap((l: CartLine) => {
+  return lines.flatMap((raw: CartLine) => {
+    const l = raw && OLD_OPTION_IDS[raw.sizeId] ? { ...raw, sizeId: OLD_OPTION_IDS[raw.sizeId] } : raw;
     const p = productById(l?.productId);
     if (!p || !p.sizes.some((s) => s.id === l.sizeId) || !allowedCuts(p).includes(l.cutId)) return [];
     const qty = Number(l.qty);

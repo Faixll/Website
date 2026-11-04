@@ -4,23 +4,30 @@ import { describe, it } from 'node:test';
 import { allowedCuts, categories, discountPct, productById, products, qtyRule, validQty, wasPrice } from '../src/data/catalog';
 import { unitPrice } from '../src/lib/pricing';
 
-// [id, English name, Arabic name, category, unit, [option id, en, ar, regular, offer][]]
+import source from '../data/products.json';
+
+/* The source of truth is data/products.json (from the client's pack). The site must match it exactly —
+   product ids, names, categories, units, option ids, labels and prices. Single-price products have one
+   implicit option on the site ("kg" per kilo, "meal" for meals). */
 type Opt = [string, string, string, number, number];
-const LIST: [string, string, string, string, string, Opt[]][] = [
-  ['hawar-local', 'Local Hawar Meat', 'لحم حوار محلي', 'hawar', 'kg', [['bone', 'With bone', 'بعظم', 69, 59], ['boneless', 'Boneless', 'بدون عظم', 79, 69]]],
-  ['naimi-local', 'Local Naimi Meat', 'لحم خروف نعيمي محلي', 'sheep', 'kg', [['kg', 'Per kg', 'للكيلو', 79, 69]]],
-  ['najdi-local', 'Local Najdi Meat', 'لحم خروف نجدي محلي', 'sheep', 'kg', [['kg', 'Per kg', 'للكيلو', 79, 69]]],
-  ['harri-local', 'Local Harri Meat', 'لحم خروف حري محلي', 'sheep', 'kg', [['kg', 'Per kg', 'للكيلو', 85, 75]]],
-  ['goat-local', 'Local Goat Meat', 'لحم تيس عارضي محلي', 'goat', 'kg', [['kg', 'Per kg', 'للكيلو', 65, 55]]],
-  ['calf-local', 'Local Calf Meat', 'لحم عجل محلي', 'calf', 'kg', [['bone', 'With bone', 'بعظم', 35, 25], ['boneless', 'Boneless', 'بدون عظم', 45, 35]]],
-  ['burger-meat', 'Meat Burger', 'برجر لحم', 'burgers', 'pack', [['5pc', '5 Pieces', '٥ قطع', 60, 50], ['box12', 'Box of 12', 'بوكس ١٢ قطعة', 120, 110]]],
-  ['burger-hawar', 'Hawar Burger', 'برجر حوار', 'burgers', 'pack', [['5pc', '5 Pieces', '٥ قطع', 35, 25], ['box6', 'Box of 6', 'بوكس ٦ قطعة', 60, 50], ['box12', 'Box of 12', 'بوكس ١٢ قطعة', 120, 110]]],
-  ['burger-beef', 'Beef Burger', 'برجر لحم بقر', 'burgers', 'pack', [['box6', 'Box of 6', 'بوكس ٦ قطعة', 60, 50]]],
-  ['kabsa-barriah-2', 'Kabsa Barriah - 2 Persons', 'كبسة برية - لحم نعيمي محلي - شخصين', 'meals', 'meal', [['meal', 'Meal', 'وجبة', 120, 110]]],
-];
+type SrcOpt = { id: string; label: { en: string; ar: string }; regular: number; offer: number };
+type Src = { id: string; category: string; unit: string; name: { en: string; ar: string }; regular?: number; offer?: number; optionGroup?: { options: SrcOpt[] } };
+const IMPLICIT: Record<string, [string, string, string]> = { kg: ['kg', 'Per kg', 'للكيلو'], meal: ['meal', 'Meal', 'وجبة'] };
+const LIST: [string, string, string, string, string, Opt[]][] = (source.products as Src[]).map((p) => [
+  p.id, p.name.en, p.name.ar, p.category, p.unit,
+  p.optionGroup
+    ? p.optionGroup.options.map((o) => [o.id, o.label.en, o.label.ar, o.regular, o.offer] as Opt)
+    : [[...IMPLICIT[p.unit], p.regular!, p.offer!] as Opt],
+]);
+
+describe('categories match products.json', () => {
+  it('same ids, names and order', () => {
+    assert.deepEqual(categories.map((c) => [c.id, c.name.en, c.name.ar]), source.categories.map((c) => [c.id, c.en, c.ar]));
+  });
+});
 
 describe("store's price list", () => {
-  it('has exactly these 10 products (all sample products deleted)', () => {
+  it('has exactly the products in products.json', () => {
     assert.deepEqual(products.map((p) => p.id).sort(), LIST.map((x) => x[0]).sort());
   });
 

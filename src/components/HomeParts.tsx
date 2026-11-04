@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'motion/react';
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { site } from '@/config/site';
 import { slotAvailable, slotDays, type SlotDay } from '@/lib/uae-time';
 import { ButtonLink } from './Button';
@@ -162,7 +162,7 @@ export function Hero({ hasVideo }: { hasVideo: boolean }) {
           <div className="hero-inner">
             <h1 id="hero-title" className="reveal-words">
               {words.map((w, i) => (
-                <span key={i} className="mask"><span className="word" style={{ ['--i' as string]: i }}>{w}</span>{i < words.length - 1 ? ' ' : ''}</span>
+                <Fragment key={i}><span className="mask"><span className="word" style={{ ['--i' as string]: i }}>{w}</span></span>{i < words.length - 1 ? ' ' : ''}</Fragment>
               ))}
             </h1>
             <p className="sub reveal-after" style={{ ['--d' as string]: `${words.length * 60 + 120}ms` }}>{t.heroSub}</p>
