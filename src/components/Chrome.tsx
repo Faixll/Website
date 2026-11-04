@@ -144,7 +144,7 @@ export function TabBar() {
         );
         if (tab.id === 'cart') {
           return (
-            <button key={tab.id} type="button" className="tab" data-tab={tab.id} aria-current={isActive ? 'page' : undefined} onClick={() => setCartOpen(true)}>
+            <button key={tab.id} type="button" className="tab" data-tab={tab.id} data-testid="tab-cart" aria-current={isActive ? 'page' : undefined} onClick={() => setCartOpen(true)}>
               {inner}
             </button>
           );
@@ -342,8 +342,13 @@ export function WhatsAppFab() {
     const check = () => {
       const fab = ref.current;
       if (!fab) return;
+      // Measure the resting position (without the "away" transform), then hide it while probing what is underneath.
+      const prevT = fab.style.transform, prevTr = fab.style.transition, prev = fab.style.visibility;
+      fab.style.transition = 'none';
+      fab.style.transform = 'none';
       const r = fab.getBoundingClientRect();
-      const prev = fab.style.visibility;
+      fab.style.transform = prevT;
+      fab.style.transition = prevTr;
       fab.style.visibility = 'hidden';
       const pts: [number, number][] = [[r.left + r.width / 2, r.top + r.height / 2], [r.left + 2, r.top + 2], [r.right - 2, r.top + 2], [r.left + 2, r.bottom - 2], [r.right - 2, r.bottom - 2]];
       const hit = pts.some(([x, y]) => (document.elementsFromPoint(x, y) as HTMLElement[]).some((el) => el.closest(COVERS) && !el.closest('.wa-fab')));

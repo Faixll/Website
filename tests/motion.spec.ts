@@ -28,7 +28,7 @@ test.describe('reduced motion', () => {
     await settle(page);
     await page.mouse.wheel(0, 400);
     await page.waitForTimeout(500);
-    const transform = await page.getByTestId('hero-photo').evaluate((el) => getComputedStyle(el).transform);
+    const transform = await page.getByTestId('hero-media').evaluate((el) => getComputedStyle(el).transform);
     expect(transform === 'none' || transform === 'matrix(1, 0, 0, 1, 0, 0)').toBe(true);
   });
 
@@ -66,4 +66,27 @@ test('all configured fonts are loaded (document.fonts)', async ({ page }) => {
       expect(loaded.some((f) => f.replace(/[\s'"]/g, '_').includes(fam) && !(fam === 'IBM_Plex_Sans' && /Arabic/.test(f))), `${lang}: ${fam} in ${loaded.join(', ')}`).toBe(true);
     }
   }
+});
+
+/* Section 6: with the CPU slowed 4× (a mid-range phone), scrolling the home page produces at most 5 long tasks.
+   Meaningful against the production build (PW_PROD=1 / `next start`); the dev server adds its own work. */
+test('CPU 4× slower: at most 5 long tasks while scrolling the home page (phone)', async ({ page, browserName }) => {
+  test.skip(browserName !== 'chromium', 'CPU throttling needs Chromium');
+  test.skip(!process.env.PW_PROD, 'run against the production build: PW_PROD=1');
+  test.setTimeout(120_000);
+  await page.setViewportSize(VIEWPORTS.phone);
+  await page.goto('/ar');
+  await settle(page);
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
+  await page.evaluate(() => {
+    (window as unknown as { __lt: number[] }).__lt = [];
+    new PerformanceObserver((l) => { for (const e of l.getEntries()) (window as unknown as { __lt: number[] }).__lt.push(Math.round(e.duration)); }).observe({ type: 'longtask' });
+  });
+  for (let i = 0; i < 14; i++) { await page.mouse.wheel(0, 500); await page.waitForTimeout(120); }
+  await page.waitForTimeout(800);
+  const tasks = await page.evaluate(() => (window as unknown as { __lt: number[] }).__lt);
+  console.log(`long tasks while scrolling (CPU 4x): ${tasks.length} [${tasks.join(', ')}] ms`);
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+  expect(tasks.length).toBeLessThanOrEqual(5);
 });

@@ -132,7 +132,8 @@ html[lang='en'] .caps { text-transform: uppercase; letter-spacing: .06em; }
 .btn-option { min-height: var(--tap); padding: 8px 18px; background: var(--white); color: var(--ink); border-color: var(--line-strong); font-weight: 500; }
 .btn-option .btn-fill { position: absolute; inset: 0; z-index: -1; background: var(--ink); transform: scaleX(0); transform-origin: left; transition: transform .25s var(--ease); }
 [dir='rtl'] .btn-option .btn-fill { transform-origin: right; }
-.btn-option.is-selected { color: var(--on-ink); border-color: var(--ink); }
+/* The fill slides in; the button's own background turns black once the slide has finished (real contrast for any reader). */
+.btn-option.is-selected { color: var(--on-ink); border-color: var(--ink); background: var(--ink); transition: background-color 0s .25s, color .15s; }
 .btn-option.is-selected .btn-fill { transform: scaleX(1); }
 .btn-option:hover:not(.is-selected) { border-color: var(--ink); }
 .btn-option small { font-weight: 400; opacity: .85; font-size: 12px; }
@@ -267,7 +268,7 @@ html[lang='en'] .logo .name { font-family: var(--f-head); font-weight: 700; font
   transition: transform .25s var(--ease);
 }
 .chip-bar.hide { transform: translateY(calc(-100% - var(--header-h))); }
-.chip-row { display: flex; gap: var(--s2); overflow-x: auto; scrollbar-width: none; padding-block: 10px; overscroll-behavior-x: contain; scroll-snap-type: x proximity; }
+.chip-row { display: flex; gap: var(--s2); overflow-x: auto; scrollbar-width: none; padding-block: 10px 9px; overscroll-behavior-x: contain; scroll-snap-type: x proximity; }
 .chip-row::-webkit-scrollbar { display: none; }
 .chip {
   flex: none; scroll-snap-align: start; display: inline-flex; align-items: center; gap: 8px; min-height: var(--tap); padding: 4px 16px 4px 6px;

@@ -34,13 +34,12 @@ export default async function Home({ params }: { params: Promise<{ lang: Lang }>
       <main id="main">
         <Hero hasVideo={heroVideoReady()} />
 
-        <section className="container" style={{ paddingTop: 'var(--s5)' }} aria-label={t.trust3.map((x) => x[0]).join('، ')}>
+        <section className="container" style={{ paddingBlock: 'var(--s5)' }} aria-label={t.trust3.map((x) => x[0]).join('، ')}>
           <TrustRow />
         </section>
 
-        <div style={{ marginTop: 'var(--s5)' }}>
-          <CategoryChips mode="scroll" sticky />
-        </div>
+        {/* Direct child of <main> so it can stay stuck under the header for the whole page. */}
+        <CategoryChips mode="scroll" sticky />
 
         {mostOrdered.length > 0 && (
           <section className="band-red section" aria-labelledby="most-ordered">
