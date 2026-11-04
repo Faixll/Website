@@ -1,6 +1,7 @@
 'use client';
-/* Site chrome: language link, cart button, tab bar (phone) / side rail (tablet+desktop), mini cart, cart drawer, toast, WhatsApp. */
+/* Site chrome: language link, cart button (desktop), tab bar (phone only), mini cart, cart sheet, toast, WhatsApp, fly-to-cart. */
 
+import type { IconWeight } from '@phosphor-icons/react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -10,7 +11,8 @@ import { productById, qtyRule } from '@/data/catalog';
 import { money, waLink } from '@/lib/format';
 import { amountLabel, lineLabel } from '@/lib/lines';
 import { linePrice } from '@/lib/pricing';
-import type { IconWeight } from '@phosphor-icons/react';
+import { Button, ButtonLink } from './Button';
+import { prefersReducedMotion, useMedia, useScrollDirection, useTyping } from './hooks';
 import { Icon, type IconName } from './Icon';
 import { EASE } from './Motion';
 import { ProductImage } from './ProductImage';
@@ -31,7 +33,7 @@ export function LangToggle({ className = 'lang-link' }: { className?: string }) 
       data-testid="lang-switch"
       onClick={(e) => { e.preventDefault(); window.location.href = target + window.location.search; }}
     >
-      <Icon name="globe" size={20} />
+      <Icon name="globe" size={18} />
       {t.otherLang}
     </a>
   );
@@ -39,9 +41,8 @@ export function LangToggle({ className = 'lang-link' }: { className?: string }) 
 
 /* ---------------------------------------------------------------- cart icon with count bubble */
 function CartGlyph({ size = 24, weight = 'regular' }: { size?: number; weight?: IconWeight }) {
-  const { totals, ready, addedTick } = useStore();
+  const { ready, totals, addedTick } = useStore();
   const reduce = useReducedMotion();
-  // The bubble counts products in the cart (kg amounts are not whole numbers).
   const shown = ready ? totals.lines.length : 0;
   return (
     <motion.span
@@ -52,15 +53,10 @@ function CartGlyph({ size = 24, weight = 'regular' }: { size?: number; weight?: 
       transition={{ duration: 0.4, ease: EASE }}
     >
       <Icon name="cart" size={size} weight={weight} />
-      {ready && totals.lines.length > 0 && (
-        <motion.span
-          key={`count-${addedTick}`}
-          className="count num"
-          data-testid="cart-count"
-          initial={addedTick && !reduce ? { scale: 0.6 } : false}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 600, damping: 18 }}
-        >
+      {shown > 0 && (
+        <motion.span key={`count-${addedTick}`} className="count num" data-testid="cart-count"
+          initial={addedTick && !reduce ? { scale: 0.6 } : false} animate={{ scale: 1 }}
+          transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 600, damping: 18 }}>
           {shown}
         </motion.span>
       )}
@@ -68,22 +64,39 @@ function CartGlyph({ size = 24, weight = 'regular' }: { size?: number; weight?: 
   );
 }
 
+/** Desktop header cart (phones use the Cart tab). */
 export function CartButton() {
   const { t, lang, totals, setCartOpen } = useStore();
   return (
-    <button
-      type="button"
-      className="icon-btn cart-btn"
-      data-testid="open-cart"
-      onClick={() => setCartOpen(true)}
-      aria-label={`${t.cartTotal}: ${money(totals.subtotal, lang)}, ${t.itemsN(totals.lines.length)}`}
-    >
+    <button type="button" className="icon-btn cart-btn" data-testid="open-cart" data-cart-target
+      onClick={() => setCartOpen(true)} aria-label={`${t.cartTotal}: ${money(totals.subtotal, lang)}, ${t.itemsN(totals.lines.length)}`}>
       <CartGlyph size={22} />
     </button>
   );
 }
 
-/* ---------------------------------------------------------------- tab bar + rail */
+/* ---------------------------------------------------------------- add-to-cart flight (transform/opacity only) */
+export function flyToCart(from: HTMLElement | null) {
+  if (!from || prefersReducedMotion()) return;
+  const target = Array.from(document.querySelectorAll<HTMLElement>('[data-cart-target]')).find((el) => el.getClientRects().length && el.offsetParent !== null);
+  if (!target) return;
+  const a = from.getBoundingClientRect();
+  const b = target.getBoundingClientRect();
+  const fly = document.createElement('div');
+  fly.className = 'fly';
+  fly.appendChild(from.cloneNode(true));
+  const size = 56;
+  Object.assign(fly.style, { left: `${a.left + a.width / 2 - size / 2}px`, top: `${a.top + a.height / 2 - size / 2}px` });
+  document.body.appendChild(fly);
+  const dx = b.left + b.width / 2 - (a.left + a.width / 2);
+  const dy = b.top + b.height / 2 - (a.top + a.height / 2);
+  fly.animate(
+    [{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: `translate(${dx}px, ${dy}px) scale(.3)`, opacity: 0.6 }],
+    { duration: 300, easing: 'cubic-bezier(.22,1,.36,1)' },
+  ).onfinish = () => fly.remove();
+}
+
+/* ---------------------------------------------------------------- tab bar (phone only) */
 type TabId = 'home' | 'search' | 'cart' | 'profile';
 const TABS: { id: TabId; icon: IconName; label: 'tabHome' | 'tabSearch' | 'tabCart' | 'tabProfile' }[] = [
   { id: 'home', icon: 'home', label: 'tabHome' },
@@ -92,31 +105,35 @@ const TABS: { id: TabId; icon: IconName; label: 'tabHome' | 'tabSearch' | 'tabCa
   { id: 'profile', icon: 'user', label: 'tabProfile' },
 ];
 
-/** Product pages and checkout use their own sticky bars instead of the tab bar (phone). */
+/** Product pages and checkout use their own sticky bars instead of the tab bar. */
 const noTabBar = (path: string) => /\/(product|checkout)(\/|$)/.test(path);
 
-function useActiveTab(): TabId | null {
-  const { lang, cartOpen } = useStore();
+export function TabBar() {
+  const { t, lang, cartOpen, setCartOpen } = useStore();
   const path = usePathname() ?? '';
-  if (cartOpen) return 'cart';
-  if (new RegExp(`^/${lang}/?$`).test(path)) return 'home';
-  if (/\/search/.test(path)) return 'search';
-  if (/\/(profile|account)/.test(path)) return 'profile';
-  return null;
-}
+  const typing = useTyping();
+  const phone = useMedia('(max-width: 767px)');
+  const hidden = noTabBar(path) || (typing && phone);
 
-function NavItems({ group }: { group: 'tabbar' | 'rail' }) {
-  const { t, lang, setCartOpen } = useStore();
-  const active = useActiveTab();
+  useEffect(() => {
+    document.body.classList.toggle('hide-tabbar', hidden);
+    return () => document.body.classList.remove('hide-tabbar');
+  }, [hidden]);
+
+  const active: TabId | null = cartOpen ? 'cart'
+    : new RegExp(`^/${lang}/?$`).test(path) ? 'home'
+    : /\/search/.test(path) ? 'search'
+    : /\/profile/.test(path) ? 'profile' : null;
+
   return (
-    <>
+    <nav className="tabbar" aria-label={t.menu} data-testid="tabbar">
       {TABS.map((tab) => {
         const isActive = active === tab.id;
         const inner = (
           <>
-            {isActive && <motion.span layoutId={`${group}-indicator`} className="indicator" transition={{ duration: 0.3, ease: EASE }} />}
+            {isActive && <motion.span layoutId="tab-indicator" className="indicator" transition={{ duration: 0.3, ease: EASE }} />}
             {tab.id === 'cart' ? (
-              <CartGlyph weight={isActive ? 'fill' : 'regular'} />
+              <span data-cart-target><CartGlyph weight={isActive ? 'fill' : 'regular'} /></span>
             ) : (
               <motion.span className="tab-ico" initial={false} animate={{ scale: isActive ? 1 : 0.9 }} transition={{ duration: 0.2, ease: EASE }}>
                 <Icon name={tab.icon} weight={isActive ? 'fill' : 'regular'} />
@@ -139,43 +156,7 @@ function NavItems({ group }: { group: 'tabbar' | 'rail' }) {
           </Link>
         );
       })}
-    </>
-  );
-}
-
-export function NavBars() {
-  const { t, lang } = useStore();
-  const path = usePathname() ?? '';
-  const [keyboard, setKeyboard] = useState(false);
-
-  // Hide the phone tab bar while the on-screen keyboard is up (a text field has focus on a small screen).
-  useEffect(() => {
-    const isText = (el: EventTarget | null) => el instanceof HTMLElement && el.matches('input:not([type=radio]):not([type=checkbox]):not([type=button]):not([type=submit]), textarea, select');
-    const on = (e: FocusEvent) => { if (isText(e.target) && matchMedia('(max-width: 767px)').matches) setKeyboard(true); };
-    const off = () => setTimeout(() => { if (!isText(document.activeElement)) setKeyboard(false); }, 50);
-    document.addEventListener('focusin', on);
-    document.addEventListener('focusout', off);
-    return () => { document.removeEventListener('focusin', on); document.removeEventListener('focusout', off); };
-  }, []);
-
-  const hidden = noTabBar(path) || keyboard;
-  useEffect(() => {
-    document.body.classList.toggle('hide-tabbar', hidden);
-    return () => document.body.classList.remove('hide-tabbar');
-  }, [hidden]);
-
-  return (
-    <>
-      <nav className="tabbar" aria-label={t.menu} data-testid="tabbar">
-        <NavItems group="tabbar" />
-      </nav>
-      <nav className="rail" aria-label={t.menu} data-testid="rail">
-        <Link href={`/${lang}`} className="rail-logo" aria-label={site.name[lang]}>
-          <img src={site.logo} alt="" width={44} height={44} />
-        </Link>
-        <NavItems group="rail" />
-      </nav>
-    </>
+    </nav>
   );
 }
 
@@ -187,7 +168,8 @@ function FreeDeliveryProgress() {
   return (
     <div className={`progress${done ? ' done' : ''}`}>
       <span>{done ? t.freeDeliveryUnlocked : t.freeDeliveryLeft(money(totals.remainingForFree, lang))}</span>
-      <div className="bar" role="progressbar" aria-valuemin={0} aria-valuemax={site.delivery.freeAbove} aria-valuenow={totals.subtotal} aria-label={t.freeDeliveryLeft(money(totals.remainingForFree, lang))}>
+      <div className="bar" role="progressbar" aria-valuemin={0} aria-valuemax={site.delivery.freeAbove} aria-valuenow={totals.subtotal}
+        aria-label={t.freeDeliveryLeft(money(totals.remainingForFree, lang))}>
         <i style={{ transform: `scaleX(${pct})` }} />
       </div>
     </div>
@@ -211,7 +193,7 @@ export function MiniCart() {
             <b className="num">{money(totals.subtotal, lang)}</b>
             <span>{t.itemsN(totals.lines.length)} · {t.viewCart}</span>
           </button>
-          <Link href={`/${lang}/checkout`} className="btn btn-primary btn-pill">{t.checkout}</Link>
+          <ButtonLink href={`/${lang}/checkout`}>{t.checkout}</ButtonLink>
         </div>
         <FreeDeliveryProgress />
       </div>
@@ -219,14 +201,15 @@ export function MiniCart() {
   );
 }
 
-/* ---------------------------------------------------------------- cart drawer */
+/* ---------------------------------------------------------------- cart: bottom sheet (phone) / side drawer (desktop) */
 export function CartDrawer() {
   const { t, lang, lines, setQty, remove, totals, cartOpen, setCartOpen } = useStore();
   const closeRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const opener = useRef<Element | null>(null);
   const reduce = useReducedMotion();
-  const dirSign = lang === 'ar' ? -1 : 1;
+  const desktop = useMedia('(min-width: 768px)');
+  const side = lang === 'ar' ? -1 : 1;
 
   useEffect(() => {
     if (!cartOpen) return;
@@ -242,13 +225,19 @@ export function CartDrawer() {
       }
     };
     document.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden'; // lock the page; the sheet body still scrolls (overscroll contained)
     return () => {
       document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
+      document.body.style.overflow = prev;
       (opener.current as HTMLElement | null)?.focus?.();
     };
   }, [cartOpen, setCartOpen]);
+
+  const hidden = desktop ? { x: `${100 * side}%` } : { y: '100%' };
+  const motionProps = reduce
+    ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: { duration: 0.1 } }
+    : { initial: hidden, animate: { x: 0, y: 0 }, exit: hidden, transition: { type: 'spring' as const, stiffness: 420, damping: 40 } };
 
   return (
     <AnimatePresence>
@@ -256,9 +245,10 @@ export function CartDrawer() {
         <div className="drawer" role="dialog" aria-modal="true" aria-labelledby="cart-title">
           <motion.button className="scrim" aria-label={t.close} tabIndex={-1} onClick={() => setCartOpen(false)}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} />
-          <motion.div className="panel" ref={panelRef}
-            initial={{ x: reduce ? 0 : `${100 * dirSign}%`, opacity: reduce ? 0 : 1 }} animate={{ x: 0, opacity: 1 }}
-            exit={{ x: reduce ? 0 : `${100 * dirSign}%`, opacity: reduce ? 0 : 1 }} transition={{ duration: 0.3, ease: EASE }}>
+          <motion.div className="panel" ref={panelRef} {...motionProps}
+            drag={!desktop && !reduce ? 'y' : false} dragConstraints={{ top: 0, bottom: 0 }} dragElastic={{ top: 0, bottom: 0.6 }}
+            onDragEnd={(_, info) => { if (info.offset.y > 110 || info.velocity.y > 600) setCartOpen(false); }}>
+            <div className="grab" aria-hidden />
             <header>
               <h2 id="cart-title" style={{ fontSize: 20 }}>{t.yourCart}</h2>
               <button ref={closeRef} className="icon-btn" onClick={() => setCartOpen(false)} aria-label={t.close}>
@@ -269,17 +259,17 @@ export function CartDrawer() {
               <div className="empty">
                 <Icon name="cart" size={32} />
                 <p>{t.cartEmpty}</p>
-                <Link href={`/${lang}/search`} className="btn btn-primary btn-pill" onClick={() => setCartOpen(false)}>{t.shopNow}</Link>
+                <ButtonLink href={`/${lang}/search`} onClick={() => setCartOpen(false)}>{t.shopNow}</ButtonLink>
               </div>
             ) : (
               <>
-                <div className="lines">
+                <div className="body-scroll" onPointerDownCapture={(e) => e.stopPropagation()}>
                   {lines.map((l) => {
                     const p = productById(l.productId)!;
                     const r = qtyRule(p);
                     return (
                       <div className="line" key={l.key} data-testid="cart-line">
-                        <div className="thumb"><ProductImage p={p} lang={lang} sizes="64px" /></div>
+                        <div className="thumb"><ProductImage p={p} lang={lang} sizes="64px" sizeId={l.sizeId} small /></div>
                         <div className="l-main">
                           <Link className="l-name" href={`/${lang}/product/${p.id}`} onClick={() => setCartOpen(false)}>{p.name[lang]}</Link>
                           <span className="l-opts" data-testid="cart-line-label">{lineLabel(l, lang, t, { withName: false }) || ' '}{l.notes ? ` · ${l.notes}` : ''}</span>
@@ -288,7 +278,7 @@ export function CartDrawer() {
                               format={(v) => amountLabel(p.id, v, t)} label={p.name[lang]} />
                             <b className="num" data-testid="cart-line-total">{money(linePrice(l), lang)}</b>
                           </div>
-                          <button className="link-btn" style={{ justifySelf: 'start' }} onClick={() => remove(l.key)}>{t.remove}</button>
+                          <Button variant="ghost" arrow={false} icon="trash" style={{ justifySelf: 'start' }} onClick={() => remove(l.key)}>{t.remove}</Button>
                         </div>
                       </div>
                     );
@@ -303,9 +293,7 @@ export function CartDrawer() {
                     </div>
                     <span className="vat">{t.vatIncl}</span>
                   </div>
-                  <Link href={`/${lang}/checkout`} className="btn btn-primary btn-pill btn-lg btn-block" onClick={() => setCartOpen(false)}>
-                    {t.checkout}
-                  </Link>
+                  <ButtonLink href={`/${lang}/checkout`} size="xl" block glow onClick={() => setCartOpen(false)}>{t.checkout}</ButtonLink>
                 </footer>
               </>
             )}
@@ -326,7 +314,7 @@ export function Toast() {
         {toast && (
           <motion.div className="toast" key={toast}
             initial={{ opacity: 0, y: reduce ? 0 : -16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: reduce ? 0 : -16 }}
-            transition={{ duration: 0.25, ease: EASE }}>
+            transition={{ duration: reduce ? 0.1 : 0.25, ease: EASE }}>
             <Icon name="check" size={20} />
             {toast}
           </motion.div>
@@ -336,11 +324,44 @@ export function Toast() {
   );
 }
 
+const COVERS = 'button, a, input, select, textarea, label, .card, .picker, .branch, .panel-card, .review-card, .reviews-empty, .minicart-inner, .trust li';
+
+/**
+ * Floating WhatsApp (P6): 44px at the inline-end above the tab bar. Hidden while scrolling down, while a field
+ * has focus, and whenever it would sit on top of a button or a card (checked when scrolling stops).
+ */
 export function WhatsAppFab() {
   const { t } = useStore();
+  const dir = useScrollDirection(120);
+  const typing = useTyping();
+  const ref = useRef<HTMLAnchorElement>(null);
+  const [covering, setCovering] = useState(true);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const check = () => {
+      const fab = ref.current;
+      if (!fab) return;
+      const r = fab.getBoundingClientRect();
+      const prev = fab.style.visibility;
+      fab.style.visibility = 'hidden';
+      const pts: [number, number][] = [[r.left + r.width / 2, r.top + r.height / 2], [r.left + 2, r.top + 2], [r.right - 2, r.top + 2], [r.left + 2, r.bottom - 2], [r.right - 2, r.bottom - 2]];
+      const hit = pts.some(([x, y]) => (document.elementsFromPoint(x, y) as HTMLElement[]).some((el) => el.closest(COVERS) && !el.closest('.wa-fab')));
+      fab.style.visibility = prev;
+      setCovering(hit);
+    };
+    const schedule = () => { clearTimeout(timer); timer = setTimeout(check, 160); };
+    schedule();
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    return () => { clearTimeout(timer); window.removeEventListener('scroll', schedule); window.removeEventListener('resize', schedule); };
+  }, []);
+
+  const away = dir === 'down' || typing || covering;
   return (
-    <a className="wa-fab" href={waLink(site.whatsapp)} target="_blank" rel="noopener" aria-label={t.whatsapp} data-testid="whatsapp-fab">
-      <Icon name="whatsapp" size={26} />
+    <a ref={ref} className={`wa-fab${away ? ' away' : ''}`} href={waLink(site.whatsapp)} target="_blank" rel="noopener"
+      aria-label={t.whatsapp} data-testid="whatsapp-fab" aria-hidden={away || undefined} tabIndex={away ? -1 : undefined}>
+      <Icon name="whatsapp" size={24} />
     </a>
   );
 }

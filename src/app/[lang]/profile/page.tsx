@@ -15,7 +15,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ lang: 
   const t = getDict(lang);
   return (
     <>
-      <SiteHeader />
+      <SiteHeader chips />
       <main id="main" className="container">
         <div className="page-title"><h1>{t.profileTitle}</h1></div>
         <ProfileView />

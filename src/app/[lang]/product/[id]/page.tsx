@@ -3,12 +3,14 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { LANGS, site, type Lang } from '@/config/site';
 import { categoryName, productById, products } from '@/data/catalog';
-import { Reveal } from '@/components/Motion';
+import { Reveal, SectionTitle } from '@/components/Motion';
+import { ProductReviews } from '@/components/ProductReviews';
 import { ProductCard } from '@/components/ProductCard';
 import { ProductConfigurator } from '@/components/ProductConfigurator';
 import { ProductImage } from '@/components/ProductImage';
 import { SiteHeader } from '@/components/SiteHeader';
 import { getDict } from '@/lib/i18n';
+import { getReviews } from '@/lib/reviews';
 import { fromPrice } from '@/lib/search';
 
 type Params = Promise<{ lang: Lang; id: string }>;
@@ -54,7 +56,7 @@ export default async function ProductPage({ params }: { params: Params }) {
 
   return (
     <>
-      <SiteHeader activeCat={p.category} />
+      <SiteHeader activeCat={p.category} chips />
       <main id="main" className="container">
         <nav className="breadcrumb" aria-label="breadcrumb">
           <Link href={`/${lang}`}>{t.home}</Link>
@@ -70,9 +72,13 @@ export default async function ProductPage({ params }: { params: Params }) {
           <ProductConfigurator p={p} />
         </div>
 
+        <section className="section" style={{ paddingBottom: 0 }} aria-label={t.reviewsTitle}>
+          <ProductReviews data={await getReviews(p.id)} productId={p.id} />
+        </section>
+
         {related.length > 0 && (
-          <section className="section cv" aria-labelledby="related">
-            <div className="section-head"><h2 id="related">{t.related}</h2></div>
+          <section className="section" aria-labelledby="related">
+            <div className="section-head"><SectionTitle id="related">{t.related}</SectionTitle></div>
             <div className="grid">{related.map((r, i) => <Reveal key={r.id} index={i}><ProductCard p={r} /></Reveal>)}</div>
           </section>
         )}

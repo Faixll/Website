@@ -3,11 +3,13 @@ import { IBM_Plex_Sans, IBM_Plex_Sans_Arabic, Lalezar, Noto_Kufi_Arabic, Playfai
 import { notFound } from 'next/navigation';
 import { LANGS, site, type Lang } from '@/config/site';
 import { AccountProvider } from '@/components/AccountProvider';
-import { CartDrawer, MiniCart, NavBars, Toast, WhatsAppFab } from '@/components/Chrome';
-import { AnnouncementBar, Footer } from '@/components/Layout';
+import { CartDrawer, MiniCart, TabBar, Toast, WhatsAppFab } from '@/components/Chrome';
+import { FeaturesProvider } from '@/components/Features';
+import { Footer, Ticker } from '@/components/Layout';
 import { MotionProvider } from '@/components/Motion';
 import { StoreProvider } from '@/components/StoreProvider';
 import { getDict, isLang } from '@/lib/i18n';
+import { getFeatures } from '@/lib/server/features';
 import '../globals.css';
 
 /* Fonts (Google, self-hosted by next/font, display: swap). Only the subsets and weights actually used are loaded. */
@@ -32,7 +34,6 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
     metadataBase: new URL(site.url),
     title: { default: `${site.name[lang]} | ${t.heroTitle}`, template: `%s | ${site.shortName[lang]}` },
     description: t.heroSub,
-    icons: { icon: site.logo },
     alternates: { languages: { ar: '/ar', en: '/en' } },
   };
 }
@@ -48,21 +49,23 @@ export default async function RootLayout({ children, params }: { children: React
   return (
     <html lang={lang} dir={t.dir} className={fonts.map((f) => f.variable).join(' ')}>
       <body>
+        <FeaturesProvider value={getFeatures()}>
         <StoreProvider lang={lang as Lang}>
           <AccountProvider>
             <MotionProvider>
               <a href="#main" className="skip">{t.skip}</a>
-              <AnnouncementBar lang={lang as Lang} />
+              <Ticker lang={lang as Lang} />
               {children}
               <Footer lang={lang as Lang} />
               <MiniCart />
               <WhatsAppFab />
-              <NavBars />
+              <TabBar />
               <CartDrawer />
               <Toast />
             </MotionProvider>
           </AccountProvider>
         </StoreProvider>
+        </FeaturesProvider>
       </body>
     </html>
   );

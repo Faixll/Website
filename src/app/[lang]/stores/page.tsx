@@ -26,7 +26,7 @@ export default async function StoresPage({ params }: { params: Promise<{ lang: L
 
   return (
     <>
-      <SiteHeader />
+      <SiteHeader chips />
       <main id="main" className="container">
         <div className="page-title">
           <h1>{t.storesTitle}</h1>

@@ -8,6 +8,8 @@ import { allowedCuts, cuts, QUICK_KG, qtyRule, wasPrice, type CutId, type Produc
 import { money, normaliseUaeMobile } from '@/lib/format';
 import { round2, unitPrice } from '@/lib/pricing';
 import { firstSlot, slotDays, type SlotDay } from '@/lib/uae-time';
+import { Button, ButtonLink } from './Button';
+import { flyToCart } from './Chrome';
 import { slotLabel, TimeRange } from './HomeParts';
 import { Icon } from './Icon';
 import { AnimatedValue, EASE } from './Motion';
@@ -60,7 +62,7 @@ export function NotifyMe({ p }: { p: Product }) {
             <input id={id} className="input" type="tel" inputMode="tel" autoComplete="tel-national" placeholder={t.phoneHint}
               value={phone} onChange={(e) => setPhone(e.target.value)} aria-invalid={!!err} aria-describedby={err ? `${id}-err` : undefined} />
           </div>
-          <button className="btn btn-primary btn-pill" type="submit">{t.send}</button>
+          <Button type="submit">{t.send}</Button>
         </form>
       )}
       {err && <p className="error" id={`${id}-err`}>{err}</p>}
@@ -68,13 +70,16 @@ export function NotifyMe({ p }: { p: Product }) {
   );
 }
 
-/** Add-to-cart button that turns into a check with a short bounce after adding. */
-function AddButton({ onAdd, className, label }: { onAdd: () => void; className: string; label: string }) {
+/** Add-to-cart button that turns into a check with a short bounce after adding; the photo flies to the cart. */
+function AddButton({ onAdd, label, glow }: { onAdd: () => void; label: string; glow?: boolean }) {
   const { t } = useStore();
   const reduce = useReducedMotion();
   const [done, setDone] = useState(false);
   return (
-    <button type="button" className={className} data-testid="add-to-cart" onClick={() => { onAdd(); setDone(true); setTimeout(() => setDone(false), 1200); }}>
+    <Button size="lg" glow={glow} data-testid="add-to-cart" onClick={() => {
+      onAdd(); setDone(true); setTimeout(() => setDone(false), 1200);
+      flyToCart(document.querySelector<HTMLElement>('.pdp-photo'));
+    }}>
       <AnimatePresence mode="wait" initial={false}>
         <motion.span key={done ? 'done' : 'add'} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
           initial={{ opacity: 0, scale: reduce ? 1 : 0.8 }} animate={{ opacity: 1, scale: reduce ? 1 : [0.8, 1.08, 1] }}
@@ -83,7 +88,7 @@ function AddButton({ onAdd, className, label }: { onAdd: () => void; className: 
           {done ? t.addedToCart : label}
         </motion.span>
       </AnimatePresence>
-    </button>
+    </Button>
   );
 }
 
@@ -98,7 +103,7 @@ export function ProductConfigurator({ p }: { p: Product }) {
   const [qty, setQty] = useState(rule.def);
   const [isPhone, setIsPhone] = useState(false);
   useEffect(() => {
-    const m = matchMedia('(max-width: 899px)');
+    const m = matchMedia('(max-width: 767px)');
     setIsPhone(m.matches);
   }, []);
   const out = p.stock === 'out';
@@ -121,12 +126,12 @@ export function ProductConfigurator({ p }: { p: Product }) {
   return (
     <motion.div
       className="pdp-sheet"
-      initial={isPhone && !reduce ? { y: 48, opacity: 0 } : false}
-      animate={{ y: 0, opacity: 1 }}
+      initial={isPhone && !reduce ? { y: 48 } : false}
+      animate={{ y: 0 }}
       transition={{ duration: 0.4, ease: EASE }}
     >
       <div className="stack" style={{ gap: 'var(--s2)' }}>
-        <div className="pills" style={{ gap: 6 }}><StockBadges p={p} /></div>
+        <div className="options-row" style={{ gap: 6 }}><StockBadges p={p} /></div>
         <h1>{p.name[lang]}</h1>
         <p className="muted">{p.desc[lang]}</p>
       </div>
@@ -146,11 +151,11 @@ export function ProductConfigurator({ p }: { p: Product }) {
           {p.sizes.length > 1 && (
             <fieldset className="opt-group">
               <legend>{p.sizeLabel?.[lang] ?? t.chooseSize}</legend>
-              <div className="pills" role="radiogroup" aria-label={p.sizeLabel?.[lang] ?? t.chooseSize}>
+              <div className="options-row" role="radiogroup" aria-label={p.sizeLabel?.[lang] ?? t.chooseSize}>
                 {p.sizes.map((s) => (
-                  <button key={s.id} type="button" role="radio" aria-checked={sizeId === s.id} className="pill" data-size={s.id} onClick={() => setSizeId(s.id)}>
+                  <Button key={s.id} variant="option" role="radio" aria-checked={sizeId === s.id} selected={sizeId === s.id} data-size={s.id} onClick={() => setSizeId(s.id)}>
                     {s.name[lang]} <small className="num">{money(s.price, lang)}</small>
-                  </button>
+                  </Button>
                 ))}
               </div>
             </fieldset>
@@ -161,9 +166,9 @@ export function ProductConfigurator({ p }: { p: Product }) {
             <div className="amount">
               <Stepper value={qty} onChange={setQty} min={rule.min} max={rule.max} step={rule.step} format={fmtAmount} label={p.name[lang]} />
               {p.byWeight && (
-                <div className="pills" role="group" aria-label={t.amount}>
+                <div className="options-row" role="group" aria-label={t.amount}>
                   {QUICK_KG.map((k) => (
-                    <button key={k} type="button" className="pill num" aria-pressed={qty === k} onClick={() => setQty(k)}>{t.kgN(k)}</button>
+                    <Button key={k} variant="option" className="num" aria-pressed={qty === k} selected={qty === k} onClick={() => setQty(k)}>{t.kgN(k)}</Button>
                   ))}
                 </div>
               )}
@@ -173,11 +178,11 @@ export function ProductConfigurator({ p }: { p: Product }) {
           {p.cuts.length > 0 && (
             <fieldset className="opt-group">
               <legend>{t.chooseCut}</legend>
-              <div className="pills" role="radiogroup" aria-label={t.chooseCut}>
+              <div className="options-row" role="radiogroup" aria-label={t.chooseCut}>
                 {p.cuts.map((c) => (
-                  <button key={c} type="button" role="radio" aria-checked={cutId === c} className="pill" data-cut={c} onClick={() => setCutId(c)}>
+                  <Button key={c} variant="option" role="radio" aria-checked={cutId === c} selected={cutId === c} data-cut={c} onClick={() => setCutId(c)}>
                     {cuts[c].name[lang]}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </fieldset>
@@ -201,8 +206,8 @@ export function ProductConfigurator({ p }: { p: Product }) {
           <DeliveryEstimate />
 
           <div className="desktop-add" style={{ gap: 'var(--s2)' }}>
-            <AddButton onAdd={onAdd} className="btn btn-primary btn-pill btn-lg" label={t.addToCart} />
-            <button type="button" className="btn btn-outline btn-pill btn-lg" onClick={onBuy}>{t.buyNow}</button>
+            <AddButton onAdd={onAdd} label={t.addToCart} glow />
+            <Button variant="secondary" size="lg" onClick={onBuy}>{t.buyNow}</Button>
           </div>
         </>
       )}
@@ -210,14 +215,14 @@ export function ProductConfigurator({ p }: { p: Product }) {
       {/* Phone: sticky action bar replaces the tab bar on product pages. */}
       <div className="action-bar" data-testid="action-bar">
         {out ? (
-          <a href="#notify" className="btn btn-primary btn-pill btn-lg"><Icon name="bell" size={20} />{t.notifyMe}</a>
+          <ButtonLink href="#notify" size="lg" icon="bell">{t.notifyMe}</ButtonLink>
         ) : (
           <>
             <div className="ab-total">
               <b className="num"><AnimatedValue value={money(total, lang)} /></b>
               <span className="tiny muted">{t.vatIncl}</span>
             </div>
-            <AddButton onAdd={onAdd} className="btn btn-primary btn-pill btn-lg" label={t.addToCart} />
+            <AddButton onAdd={onAdd} label={t.addToCart} />
           </>
         )}
       </div>

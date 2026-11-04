@@ -1,29 +1,28 @@
 'use client';
 
+import { motion, useScroll } from 'motion/react';
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { site } from '@/config/site';
-import { categories, type CategoryId } from '@/data/catalog';
+import type { CategoryId } from '@/data/catalog';
+import { CategoryChips } from './Chips';
 import { CartButton, LangToggle } from './Chrome';
+import { Icon } from './Icon';
+import { RewardsChip } from './Rewards';
 import { SearchBox } from './SearchBox';
 import { useStore } from './StoreProvider';
 
 /**
- * Header: logo, search, language, cart. On phones it shrinks (smaller logo, search moves to the Search tab)
- * after scrolling 40px. On tablet/desktop a category strip with thin dividers sits under it, sticky.
+ * One header, made responsive with CSS (rendered once):
+ * - phone (<768px): a single 56px row — mark + name, rewards chip (when enabled), language. Search and cart live in the tab bar.
+ * - tablet/desktop: horizontal logo, search, account, language, cart. Category chips sit below it (`chips`).
+ * A 3px red scroll-progress bar runs along its top; after 40px of scroll the logo shrinks and the background blurs.
  */
-export function SiteHeader({ q, activeCat, hideSearch }: { q?: string; activeCat?: CategoryId | 'all'; hideSearch?: boolean }) {
+export function SiteHeader({ q, activeCat, chips = false }: { q?: string; activeCat?: CategoryId; chips?: boolean }) {
   const { t, lang } = useStore();
   const [compact, setCompact] = useState(false);
-  const ref = useRef<HTMLElement>(null);
-  // Publish the header height so other sticky bars (home category chips) sit right under it.
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => document.documentElement.style.setProperty("--header-real", `${el.offsetHeight}px`));
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
+  const { scrollYProgress } = useScroll();
+
   useEffect(() => {
     const on = () => setCompact(window.scrollY > 40);
     on();
@@ -32,25 +31,31 @@ export function SiteHeader({ q, activeCat, hideSearch }: { q?: string; activeCat
   }, []);
 
   return (
-    <header ref={ref} className={`site-header${compact ? ' compact' : ''}`} data-testid="site-header">
-      <div className="container bar">
-        <Link href={`/${lang}`} className="logo" aria-label={site.name[lang]}>
-          <img src={site.logo} alt="" width={40} height={40} />
-          <b>{site.shortName[lang]}</b>
-        </Link>
-        {!hideSearch && <SearchBox initial={q} />}
-        <LangToggle />
-        <CartButton />
-      </div>
-      <div className="cat-strip">
-        <nav className="container" aria-label={t.categories} data-testid="category-nav">
-          {categories.map((c) => (
-            <Link key={c.id} href={`/${lang}/search?cat=${c.id}`} aria-current={activeCat === c.id ? 'page' : undefined}>
-              {c.name[lang]}
+    <>
+      <header className={`site-header${compact ? ' compact' : ''}`} data-testid="site-header">
+        <motion.div className="scroll-progress" style={{ scaleX: scrollYProgress }} aria-hidden />
+        <div className="container bar">
+          <Link href={`/${lang}`} className="logo" aria-label={site.name[lang]}>
+            <img className="mark" src={site.brand.mark} alt="" width={36} height={36} />
+            <span className="name">{site.shortName[lang]}</span>
+            <img className="wordmark" src={site.brand.logo} alt="" width={107} height={44} />
+          </Link>
+          <div className="desk-only search-slot" style={{ flex: 1 }}><SearchBox initial={q} /></div>
+          <div className="header-actions">
+            <RewardsChip />
+            <Link href={`/${lang}/profile`} className="icon-btn desk-only" aria-label={t.tabProfile} data-testid="header-account">
+              <Icon name="user" size={22} />
             </Link>
-          ))}
-        </nav>
-      </div>
-    </header>
+            <LangToggle />
+            <span className="desk-only"><CartButton /></span>
+          </div>
+        </div>
+      </header>
+      {chips && (
+        <div className="desk-chips">
+          <div className="container"><CategoryChips mode="link" active={activeCat} /></div>
+        </div>
+      )}
+    </>
   );
 }

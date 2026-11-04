@@ -14,7 +14,7 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
   const paid = sp.paid === '1' || sp.redirect_status === 'succeeded';
   return (
     <>
-      <SiteHeader />
+      <SiteHeader chips />
       <main id="main" className="container">
         <OrderConfirmation id={safeId} paid={paid} points={Math.max(0, Math.min(100000, Number(sp.pts) || 0))} />
       </main>

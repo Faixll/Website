@@ -18,6 +18,7 @@ import { accountsEnabled } from '@/lib/supabase/env';
 import { useAccount } from './AccountProvider';
 import { BranchStatusLine } from './BranchCard';
 import { SlotPicker } from './HomeParts';
+import { Button, ButtonLink } from './Button';
 import { Icon } from './Icon';
 import { useStore } from './StoreProvider';
 
@@ -102,7 +103,7 @@ export function Checkout() {
       <div className="empty">
         <Icon name="cart" />
         <p>{t.emptyCheckout}</p>
-        <Link href={`/${lang}`} className="btn btn-primary">{t.shopNow}</Link>
+        <ButtonLink href={`/${lang}`}>{t.shopNow}</ButtonLink>
       </div>
     );
   }
@@ -270,9 +271,9 @@ function CheckoutForm({ form, setForm, totals, priced, disc, setDisc, discError,
           {walletOk === false && <p className="alert">{t.walletUnavailable}</p>}
         </>
       ) : (
-        <button type="submit" form="checkout-form" className="btn btn-primary btn-lg btn-block" disabled={busy}>
-          {busy ? t.processing : payLabel}
-        </button>
+        <Button type="submit" form="checkout-form" size="lg" block glow loading={busy}>
+          {payLabel}
+        </Button>
       )}
       <p className="secure"><Icon name="lock" />{t.secure}</p>
     </div>
@@ -493,7 +494,7 @@ function DiscountsPanel({ totals, priced, disc, setDisc, discError, setDiscError
         {hasPromo ? (
           <div className="applied">
             <span className="status-open"><Icon name="check" />{t.promoApplied(priced.promoCode!, money(priced.promoDiscount, lang))}</span>
-            <button type="button" className="link-btn" onClick={() => { setCode(''); setDisc({ ...disc, promo: '' }); }}>{t.removeCode}</button>
+            <Button variant="ghost" arrow={false} onClick={() => { setCode(''); setDisc({ ...disc, promo: '' }); }}>{t.removeCode}</Button>
           </div>
         ) : (
           <div className="promo-row">
@@ -501,7 +502,7 @@ function DiscountsPanel({ totals, priced, disc, setDisc, discError, setDiscError
               value={code} onChange={(e) => { setCode(e.target.value); setDiscError(''); }}
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); apply(); } }}
               aria-invalid={!!discError} aria-describedby={discError ? 'co-disc-e' : undefined} />
-            <button type="button" className="btn btn-outline" onClick={apply}>{t.applyCode}</button>
+            <Button variant="secondary" onClick={apply}>{t.applyCode}</Button>
           </div>
         )}
       </div>

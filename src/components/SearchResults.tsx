@@ -3,10 +3,12 @@
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { site } from '@/config/site';
-import { categories, type CategoryId } from '@/data/catalog';
+import { categories } from '@/data/catalog';
 import { waLink } from '@/lib/format';
 import { applyFilters, type Filters } from '@/lib/search';
-import { categoryIcon, Icon } from './Icon';
+import { ButtonLink } from './Button';
+import { CategoryChips } from './Chips';
+import { Icon } from './Icon';
 import { Reveal } from './Motion';
 import { ProductCard } from './ProductCard';
 import { useStore } from './StoreProvider';
@@ -53,20 +55,9 @@ export function SearchResults({ initial, autoFocus }: { initial: Filters; autoFo
         </form>
       </div>
 
-      <nav aria-label={t.categories} style={{ marginTop: 'var(--s4)' }}>
-        <div className="hscroll chips">
-          <button type="button" className="chip" aria-pressed={!f.cat} onClick={() => update({ cat: '' })}>
-            <span className="bubble"><Icon name="search" size={24} weight={!f.cat ? 'fill' : 'regular'} /></span>
-            <span className="label caps">{t.all}</span>
-          </button>
-          {categories.map((c) => (
-            <button key={c.id} type="button" className="chip" data-cat={c.id} aria-pressed={f.cat === c.id} onClick={() => update({ cat: f.cat === c.id ? '' : (c.id as CategoryId) })}>
-              <span className="bubble"><Icon name={categoryIcon[c.id]} size={26} weight={f.cat === c.id ? 'fill' : 'regular'} /></span>
-              <span className="label caps">{c.name[lang]}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
+      <div style={{ marginTop: 'var(--s4)' }}>
+        <CategoryChips mode="filter" withAll active={f.cat} onSelect={(c) => update({ cat: c && c === f.cat ? '' : c })} />
+      </div>
 
       <div className="results-bar">
         <div>
@@ -90,7 +81,7 @@ export function SearchResults({ initial, autoFocus }: { initial: Filters; autoFo
         <div className="empty" data-testid="no-results">
           <Icon name="search" size={32} />
           <p>{t.noResults}</p>
-          <a className="btn btn-ink btn-pill" href={waLink(site.whatsapp, f.q)} target="_blank" rel="noopener"><Icon name="whatsapp" size={20} />{t.noResultsWa}</a>
+          <ButtonLink variant="secondary" href={waLink(site.whatsapp, f.q)} external icon="whatsapp">{t.noResultsWa}</ButtonLink>
         </div>
       )}
     </div>

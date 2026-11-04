@@ -20,8 +20,16 @@ export const site = {
   /** TODO: the live domain (used for share links and SEO). */
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://example.ae',
 
-  /** TODO: replace /public/logo.svg with the real logo. */
-  logo: '/logo.svg',
+  /** Logo files (from the brand pack, in /public/brand). */
+  logo: '/brand/hawar-albada-mark.svg',
+  brand: {
+    mark: '/brand/hawar-albada-mark.svg',
+    /** Horizontal logo for beige backgrounds (desktop header, 44px high). */
+    logo: '/brand/hawar-albada-logo.svg',
+    /** Horizontal logo for black / red backgrounds (footer). */
+    logoLight: '/brand/hawar-albada-logo-light.svg',
+    stacked: '/brand/hawar-albada-logo-stacked.svg',
+  },
 
   /* ---------------- contact (TODO: all placeholders) ---------------- */
   /** TODO: main phone, E.164 format (+971…). */
@@ -32,6 +40,9 @@ export const site = {
   email: 'orders@example.ae',
   /** TODO: Instagram handle (without @) — the link is built from it. */
   instagramHandle: 'example',
+
+  /** TODO: Google review link (e.g. https://g.page/r/…/review). The "Review us on Google" button is hidden while this is empty. */
+  googleReviewUrl: '',
 
   /* ---------------- legal (TODO: placeholders) ---------------- */
   /** TODO: trade license number. */

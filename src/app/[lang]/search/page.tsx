@@ -32,7 +32,7 @@ export default async function SearchPage({ params, searchParams }: { params: Pro
 
   return (
     <>
-      <SiteHeader hideSearch activeCat={filters.cat || undefined} />
+      <SiteHeader activeCat={filters.cat || undefined} />
       <main id="main" className="container section" style={{ paddingTop: 'var(--s5)' }}>
         <SearchResults initial={filters} autoFocus={one(sp.focus) === '1'} />
       </main>

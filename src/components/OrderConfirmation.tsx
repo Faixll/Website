@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect } from 'react';
 import type { CartLine } from '@/lib/pricing';
+import { ButtonLink } from './Button';
 import { Icon } from './Icon';
 import { useStore } from './StoreProvider';
 
@@ -31,7 +31,7 @@ export function OrderConfirmation({ id, paid, points = 0 }: { id: string; paid: 
       <p>{t.orderNo}: <b className="num ltr">{id}</b>{paid && <> · <span className="badge badge-fresh">{t.paid}</span></>}</p>
       <p className="muted">{t.willCall}</p>
       {points > 0 && <p className="earn"><Icon name="check" />{t.pointsComing(points)}</p>}
-      <Link href={`/${lang}`} className="btn btn-primary">{t.backHome}</Link>
+      <ButtonLink href={`/${lang}`}>{t.backHome}</ButtonLink>
     </div>
   );
 }

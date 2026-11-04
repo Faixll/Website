@@ -6,6 +6,8 @@ import { useState } from 'react';
 import { discountPct, qtyRule, wasPrice, type Product } from '@/data/catalog';
 import { money } from '@/lib/format';
 import { fromSize } from '@/lib/search';
+import { Button } from './Button';
+import { flyToCart } from './Chrome';
 import { Icon } from './Icon';
 import { EASE } from './Motion';
 import { ProductImage } from './ProductImage';
@@ -32,21 +34,22 @@ export function unitText(p: Product, t: ReturnType<typeof useStore>['t'], lang: 
   return fromSize(p).name[lang];
 }
 
-/** Round red quick-add: adds the default option; turns into a check with a short bounce. */
-export function QuickAdd({ p, className = 'quick-add', size = 22 }: { p: Product; className?: string; size?: number }) {
+/** Round red quick-add (Button "quick"): adds the default option, Plus → Check with a short bounce, image flies to the cart. */
+export function QuickAdd({ p, className, size = 22 }: { p: Product; className?: string; size?: number }) {
   const { t, lang, add, showToast } = useStore();
   const [done, setDone] = useState(false);
   const reduce = useReducedMotion();
   if (p.stock === 'out') return null;
   return (
-    <button
-      type="button"
-      className={`${className}${done ? ' done' : ''}`}
+    <Button
+      variant="quick"
+      className={`${className ?? ''}${done ? ' is-done' : ''}`}
       aria-label={`${t.add}: ${p.name[lang]}`}
       data-testid="quick-add"
       onClick={(e) => {
         e.preventDefault();
         add(defaultLine(p.id)!, qtyRule(p).def);
+        flyToCart(e.currentTarget.closest('.card')?.querySelector<HTMLElement>('.media') ?? e.currentTarget);
         showToast(t.addedToCart);
         setDone(true);
         setTimeout(() => setDone(false), 1200);
@@ -64,7 +67,7 @@ export function QuickAdd({ p, className = 'quick-add', size = 22 }: { p: Product
           <Icon name={done ? 'check' : 'plus'} size={size} weight="bold" />
         </motion.span>
       </AnimatePresence>
-    </button>
+    </Button>
   );
 }
 
@@ -77,7 +80,7 @@ export function ProductCard({ p, priority }: { p: Product; priority?: boolean })
       <div className="media">
         <ProductImage p={p} lang={lang} sizes="(min-width: 1100px) 25vw, (min-width: 768px) 33vw, 50vw" priority={priority} />
         <div className="badges"><StockBadges p={p} /></div>
-        <QuickAdd p={p} />
+        <QuickAdd p={p} className="quick" />
       </div>
       <div className="body">
         <h3><Link href={`/${lang}/product/${p.id}`}>{p.name[lang]}</Link></h3>

@@ -113,7 +113,7 @@ export function SearchBox({ initial = '' }: { initial?: string }) {
                       <span className="s-name">{hl(p.name[lang])}</span>
                       <span className="s-price num">{p.stock === 'out' ? t.out : <>{`${p.sizes.length > 1 ? t.from + ' ' : ''}${money(fromPrice(p), lang)}`} <WasPrice amount={wasPrice(fromSize(p))} /></>}</span>
                     </Link>
-                    <QuickAdd p={p} className="icon-btn" size={20} />
+                    <QuickAdd p={p} size={20} />
                   </div>
                 );
               })}

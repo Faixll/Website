@@ -6,6 +6,7 @@ import { site } from '@/config/site';
 import { emirates } from '@/data/places';
 import { phoneDisplay, waLink } from '@/lib/format';
 import { LangToggle } from './Chrome';
+import { Button, ButtonLink } from './Button';
 import { Icon } from './Icon';
 import { useStore } from './StoreProvider';
 
@@ -82,8 +83,8 @@ export function ProfileView() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-          <button type="submit" className="btn btn-primary btn-pill">{saved ? <><Icon name="check" size={20} />{t.saved}</> : t.saveDetails}</button>
-          <button type="button" className="btn btn-ghost btn-pill" onClick={() => { try { localStorage.removeItem(CONTACT_KEY); } catch { /* ignore */ } setD(EMPTY); setSaved(false); }}>{t.clearDetails}</button>
+          <Button type="submit" icon={saved ? 'check' : undefined}>{saved ? t.saved : t.saveDetails}</Button>
+          <Button variant="ghost" arrow={false} onClick={() => { try { localStorage.removeItem(CONTACT_KEY); } catch { /* ignore */ } setD(EMPTY); setSaved(false); }}>{t.clearDetails}</Button>
         </div>
         <p role="status" className="sr-only">{saved ? t.saved : ''}</p>
       </form>
@@ -91,13 +92,13 @@ export function ProfileView() {
       <div className="stack" style={{ gap: 'var(--s4)' }}>
         <section className="panel-card" aria-labelledby="pf-lang">
           <h2 id="pf-lang">{t.language}</h2>
-          <LangToggle className="btn btn-ghost btn-pill" />
+          <LangToggle className="btn btn-secondary btn-md" />
         </section>
         <section className="panel-card" aria-labelledby="pf-contact">
           <h2 id="pf-contact">{t.contactUs}</h2>
-          <div className="pills">
-            <a className="btn btn-ink btn-pill" href={waLink(site.whatsapp)} target="_blank" rel="noopener"><Icon name="whatsapp" size={20} />{t.whatsapp}</a>
-            <a className="btn btn-ghost btn-pill" href={`tel:${site.phone}`}><Icon name="phone" size={20} /><span className="ltr num">{phoneDisplay(site.phone)}</span></a>
+          <div className="options-row">
+            <ButtonLink variant="secondary" icon="whatsapp" href={waLink(site.whatsapp)} external>{t.whatsapp}</ButtonLink>
+            <ButtonLink variant="secondary" icon="phone" href={`tel:${site.phone}`}><span className="ltr num">{phoneDisplay(site.phone)}</span></ButtonLink>
           </div>
         </section>
         <nav className="panel-card" aria-label={t.legal}>

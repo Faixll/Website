@@ -1,4 +1,4 @@
-/* Server-rendered layout pieces: announcement bar, footer, trust strip. The header is in SiteHeader.tsx. */
+/* Server-rendered layout pieces: announcement ticker and footer. The header is in SiteHeader.tsx. */
 import Link from 'next/link';
 import { instagramUrl, site, type Lang } from '@/config/site';
 import { categories } from '@/data/catalog';
@@ -6,28 +6,19 @@ import { phoneDisplay, waLink } from '@/lib/format';
 import { getDict } from '@/lib/i18n';
 import { Icon, type IconName } from './Icon';
 
-export function AnnouncementBar({ lang }: { lang: Lang }) {
-  return (
-    <div className="announce" data-testid="announcement">
-      <Icon name="truck" size={20} />
-      <span>{getDict(lang).promise}</span>
-    </div>
-  );
-}
-
-const trustIcons: IconName[] = ['seal', 'snow', 'knife'];
-
-export function TrustStrip({ lang }: { lang: Lang }) {
+/** Thin black ticker that scrolls away with the page. Rotates the real messages; pauses on hover/touch; under
+ *  reduced motion it is static and shows only the first message. */
+export function Ticker({ lang }: { lang: Lang }) {
   const t = getDict(lang);
+  const icons: IconName[] = ['truck', 'seal', 'snow'];
   return (
-    <ul className="trust">
-      {t.trust3.map(([title, sub], i) => (
-        <li key={title}>
-          <span className="t-ico"><Icon name={trustIcons[i]} /></span>
-          <span className="stack" style={{ gap: 0 }}><b>{title}</b><small className="muted">{sub}</small></span>
-        </li>
-      ))}
-    </ul>
+    <div className="ticker" data-testid="announcement" role="region" aria-label={t.ticker[0]}>
+      <div className="ticker-track">
+        {t.ticker.map((m, i) => (
+          <span key={m} className="ticker-item" aria-hidden={i > 0 || undefined}><Icon name={icons[i]} size={16} />{m}</span>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -47,7 +38,7 @@ export function Footer({ lang }: { lang: Lang }) {
       <div className="container">
         <div className="cols">
           <div className="stack">
-            <h2>{site.name[lang]}</h2>
+            <img className="f-logo" src={site.brand.logoLight} alt={site.name[lang]} width={127} height={52} loading="lazy" />
             <p style={{ opacity: 0.85 }}>{t.heroSub}</p>
             <div>
               <h2 style={{ marginTop: 8, fontSize: 16 }}>{t.paymentMethods}</h2>

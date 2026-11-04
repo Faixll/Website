@@ -1,0 +1,5 @@
+{
+  "_note": "Written by scripts/process-images.mjs. 'images' lists the files in public/images/products (without .webp). Add an id to 'illustrative' if that image is AI-made: the product page then shows 'Illustrative image'.",
+  "images": [],
+  "illustrative": []
+}

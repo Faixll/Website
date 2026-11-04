@@ -5,6 +5,7 @@ import { instagramUrl, site } from '@/config/site';
 import { branches } from '@/data/places';
 import { normaliseUaeMobile, phoneDisplay, waLink } from '@/lib/format';
 import { BranchCard, directionsUrl } from './BranchCard';
+import { Button, ButtonLink } from './Button';
 import { Icon } from './Icon';
 import { useStore } from './StoreProvider';
 
@@ -32,7 +33,7 @@ export function BranchesWithMap() {
         <div className="map-wrap">
           <iframe key={b.id} title={`${t.map}: ${b.name[lang]}`} src={osm(b.lat, b.lng)} loading="lazy" referrerPolicy="no-referrer" />
         </div>
-        <a className="btn btn-ghost" href={directionsUrl(b)} target="_blank" rel="noopener"><Icon name="external" size={20} />{b.name[lang]} · {t.openInMaps}</a>
+        <ButtonLink variant="ghost" href={directionsUrl(b)} external>{b.name[lang]} · {t.openInMaps}</ButtonLink>
       </div>
     </div>
   );
@@ -104,9 +105,9 @@ export function ContactForm() {
         {err.message && <p className="error">{err.message}</p>}
       </div>
       {state === 'error' && <p className="alert error-box" role="alert">{t.orderError}</p>}
-      <button className="btn btn-primary btn-lg" type="submit" disabled={state === 'busy'} style={{ justifySelf: 'start' }}>
-        {state === 'busy' ? t.processing : t.send}
-      </button>
+      <Button type="submit" size="lg" loading={state === 'busy'} style={{ justifySelf: 'start' }}>
+        {t.send}
+      </Button>
     </form>
   );
 }

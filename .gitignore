@@ -12,3 +12,7 @@ next-env.d.ts
 test-results
 playwright-report
 blob-report
+
+# raw photos (processed copies go to public/images/products)
+images-raw/*
+!images-raw/README.txt

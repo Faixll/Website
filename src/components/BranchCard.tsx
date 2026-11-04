@@ -1,12 +1,11 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useId, useState } from 'react';
 import type { Branch } from '@/data/places';
 import { phoneDisplay } from '@/lib/format';
 import { branchStatus, uaeNow, type BranchStatus } from '@/lib/uae-time';
 import { TimeRange } from './HomeParts';
-import { Icon } from './Icon';
+import { Button, ButtonLink } from './Button';
 import { useStore } from './StoreProvider';
 
 /** Status is computed on the client (after mount) so a statically built page never shows a stale open/closed state. */
@@ -58,9 +57,9 @@ export function BranchCard({ b, selected, onSelect }: { b: Branch; selected?: bo
         <p className="small"><span className="muted">{t.todayHours}: </span>{ranges(b.hours[today])}</p>
       )}
       <div>
-        <button type="button" className="link-btn" aria-expanded={allHours} aria-controls={tableId} onClick={() => setAllHours((v) => !v)}>
+        <Button variant="ghost" arrow={false} icon="clock" aria-expanded={allHours} aria-controls={tableId} onClick={() => setAllHours((v) => !v)}>
           {allHours ? t.hideAllHours : t.showAllHours}
-        </button>
+        </Button>
         {allHours && (
           <table className="hours-table" id={tableId}>
             <caption className="sr-only">{t.hours}</caption>
@@ -76,12 +75,12 @@ export function BranchCard({ b, selected, onSelect }: { b: Branch; selected?: bo
         )}
       </div>
       <div className="actions">
-        <a className="btn btn-ghost" href={`tel:${b.phone}`} aria-label={`${t.call} ${phoneDisplay(b.phone)}`}><Icon name="phone" size={20} />{t.call}</a>
-        <a className="btn btn-ghost" href={directionsUrl(b)} target="_blank" rel="noopener"><Icon name="pin" size={20} />{t.openInMaps}</a>
-        {onSelect && <button type="button" className="btn btn-ghost" onClick={onSelect} aria-pressed={selected}>{t.map}</button>}
-        <Link className="btn btn-ink" href={`/${lang}/checkout`} onClick={() => { setFulfilment({ type: 'pickup', branchId: b.id }); showToast(t.pickupHere); }}>
-          <Icon name="store" size={20} />{t.pickupHere}
-        </Link>
+        <ButtonLink variant="secondary" icon="phone" href={`tel:${b.phone}`} aria-label={`${t.call} ${phoneDisplay(b.phone)}`}>{t.call}</ButtonLink>
+        <ButtonLink variant="secondary" icon="pin" href={directionsUrl(b)} external>{t.openInMaps}</ButtonLink>
+        {onSelect && <Button variant="option" selected={selected} onClick={onSelect} aria-pressed={selected}>{t.map}</Button>}
+        <ButtonLink icon="store" href={`/${lang}/checkout`} onClick={() => { setFulfilment({ type: 'pickup', branchId: b.id }); showToast(t.pickupHere); }}>
+          {t.pickupHere}
+        </ButtonLink>
       </div>
     </article>
   );

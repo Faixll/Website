@@ -1,9 +1,11 @@
 'use client';
 /**
- * Motion helpers (motion/react). Only transform and opacity are animated, 150–400 ms.
- * Under prefers-reduced-motion, MotionConfig strips transforms and keeps short opacity fades.
+ * Motion helpers (motion/react). Only transform and opacity are animated, 150–450 ms.
+ * P5: content is fully visible on first paint and without JavaScript. Reveal effects are applied only after
+ * hydration and only to elements that start BELOW the fold — and they move (transform) rather than fade.
  */
-import { AnimatePresence, motion, MotionConfig, useReducedMotion } from 'motion/react';
+import { AnimatePresence, motion, MotionConfig, useInView, useReducedMotion } from 'motion/react';
+import { useEffect, useRef, useState } from 'react';
 
 export const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -11,37 +13,55 @@ export function MotionProvider({ children }: { children: React.ReactNode }) {
   return <MotionConfig reducedMotion="user" transition={{ duration: 0.3, ease: EASE }}>{children}</MotionConfig>;
 }
 
-/** Fade up 12px once when scrolled into view; `index` staggers siblings by 40 ms. */
-export function Reveal({ children, index = 0, as = 'div', className, ...rest }: { children: React.ReactNode; index?: number; as?: 'div' | 'section' | 'li'; className?: string } & Record<string, unknown>) {
+/** 'static' (as rendered by the server) → 'hidden' (only if below the fold after hydration) → 'shown' when it enters. */
+function useBelowFoldReveal<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
   const reduce = useReducedMotion();
-  const C = motion[as];
+  const [state, setState] = useState<'static' | 'hidden' | 'shown'>('static');
+  const inView = useInView(ref, { once: true, margin: '0px 0px -8% 0px' });
+  useEffect(() => {
+    if (reduce || !ref.current) return;
+    if (ref.current.getBoundingClientRect().top > window.innerHeight) setState('hidden');
+  }, [reduce]);
+  useEffect(() => { if (state === 'hidden' && inView) setState('shown'); }, [state, inView]);
+  return { ref, state };
+}
+
+/** Cards: move up 16px into place (50 ms stagger by `index`), once. */
+export function Reveal({ children, index = 0, className }: { children: React.ReactNode; index?: number; className?: string }) {
+  const { ref, state } = useBelowFoldReveal<HTMLDivElement>();
   return (
-    <C
-      className={className}
-      initial={{ opacity: 0, y: reduce ? 0 : 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
-      transition={{ duration: 0.35, ease: EASE, delay: reduce ? 0 : Math.min(index, 8) * 0.04 }}
-      {...rest}
-    >
+    <motion.div ref={ref} className={className} initial={false}
+      animate={state === 'hidden' ? { y: 16 } : { y: 0 }}
+      transition={{ duration: 0.4, ease: EASE, delay: state === 'shown' ? Math.min(index, 8) * 0.05 : 0 }}>
       {children}
-    </C>
+    </motion.div>
   );
 }
 
-/** A number/price that slides and fades when it changes (200 ms). */
+/** Section titles slide up out of a mask (below the fold only). */
+export function SectionTitle({ children, id }: { children: React.ReactNode; id?: string }) {
+  const { ref, state } = useBelowFoldReveal<HTMLHeadingElement>();
+  return (
+    <h2 ref={ref} id={id} className="section-title">
+      <span className="mask">
+        <motion.span style={{ display: 'inline-block' }} initial={false} animate={state === 'hidden' ? { y: '105%' } : { y: 0 }} transition={{ duration: 0.45, ease: EASE }}>
+          {children}
+        </motion.span>
+      </span>
+    </h2>
+  );
+}
+
+/** A number/price that slides when it changes (vertical, 200 ms). */
 export function AnimatedValue({ value, className }: { value: string; className?: string }) {
   const reduce = useReducedMotion();
   return (
-    <span className={`anim-num ${className ?? ''}`} style={{ position: 'relative', display: 'inline-grid' }}>
+    <span className={`anim-num ${className ?? ''}`}>
       <AnimatePresence mode="popLayout" initial={false}>
-        <motion.span
-          key={value}
-          initial={{ opacity: 0, y: reduce ? 0 : 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: reduce ? 0 : -6 }}
-          transition={{ duration: 0.2, ease: EASE }}
-        >
+        <motion.span key={value} style={{ gridArea: '1 / 1' }}
+          initial={{ y: reduce ? 0 : '100%', opacity: reduce ? 0 : 1 }} animate={{ y: 0, opacity: 1 }}
+          exit={{ y: reduce ? 0 : '-100%', opacity: reduce ? 0 : 1 }} transition={{ duration: reduce ? 0.1 : 0.2, ease: EASE }}>
           {value}
         </motion.span>
       </AnimatePresence>
