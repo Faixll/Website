@@ -1,7 +1,7 @@
 'use client';
 
 import { useId, useState } from 'react';
-import { site } from '@/config/site';
+import { instagramUrl, site } from '@/config/site';
 import { branches } from '@/data/places';
 import { normaliseUaeMobile, phoneDisplay, waLink } from '@/lib/format';
 import { BranchCard, directionsUrl } from './BranchCard';
@@ -44,7 +44,7 @@ export function ContactTiles() {
     { icon: 'phone' as const, label: t.call, sub: phoneDisplay(site.phone), href: `tel:${site.phone}`, ltr: true },
     { icon: 'whatsapp' as const, label: t.whatsapp, sub: phoneDisplay(site.whatsapp), href: waLink(site.whatsapp), ltr: true, ext: true },
     { icon: 'mail' as const, label: t.email, sub: site.email, href: `mailto:${site.email}`, ltr: true },
-    { icon: 'instagram' as const, label: t.instagram, sub: '@' + site.instagram.split('/').filter(Boolean).pop(), href: site.instagram, ltr: true, ext: true },
+    { icon: 'instagram' as const, label: t.instagram, sub: '@' + site.instagramHandle, href: instagramUrl, ltr: true, ext: true },
   ];
   return (
     <div className="contact-grid">

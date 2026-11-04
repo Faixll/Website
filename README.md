@@ -1,4 +1,4 @@
-# Hawar Al Bada Fresh Meat Trading — online store
+# Hawar Albada Fresh Meat Trading — online store
 
 Bilingual (Arabic default, right-to-left; English toggle) meat and livestock store for the UAE.
 Next.js 15 (App Router) + Stripe. No customer accounts.

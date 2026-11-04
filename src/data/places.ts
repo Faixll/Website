@@ -1,9 +1,13 @@
 /**
  * Delivery areas and branches.
  * For now the store delivers only within Al Ain and has one branch (Al Towayya, Al Ain Cooperative).
- * PLACEHOLDER: branch phone, map coordinates and opening hours still need confirming.
+ * Branch phone numbers and opening hours are in src/config/site.ts (site.branches), marked TODO.
+ * TODO: confirm the exact map pin.
  */
+import { site, type Hours } from '@/config/site';
 import type { L10n } from './catalog';
+
+export type { Hours };
 
 /** Delivery cities (fees and minimum order are in site.delivery.emirates, keyed by id). */
 export const emirates: { id: string; name: L10n; areas: L10n[] }[] = [
@@ -19,12 +23,6 @@ export const emirates: { id: string; name: L10n; areas: L10n[] }[] = [
   },
 ];
 
-/** Opening hours per weekday (0 = Sunday … 6 = Saturday), as [open, close] in "HH:MM" UAE time. */
-export type Hours = Record<number, [string, string][]>;
-
-const everyDay = (ranges: [string, string][], friday?: [string, string][]): Hours =>
-  Object.fromEntries([0, 1, 2, 3, 4, 5, 6].map((d) => [d, d === 5 && friday ? friday : ranges]));
-
 export type Branch = {
   id: string;
   emirate: string;
@@ -36,15 +34,15 @@ export type Branch = {
   hours: Hours;
 };
 
+const branch = (b: Omit<Branch, 'phone' | 'hours'>): Branch => ({ ...b, ...site.branches[b.id] });
+
 export const branches: Branch[] = [
-  {
+  branch({
     id: 'al-ain-towayya', emirate: 'al-ain',
     name: { ar: 'فرع العين — الطوية', en: 'Al Ain — Al Towayya' },
     address: { ar: 'جمعية العين التعاونية، الطوية، العين', en: 'Al Ain Cooperative Society, Al Towayya, Al Ain' },
-    // PLACEHOLDER: phone, exact map pin and hours.
-    phone: '+971500000001', lat: 24.2533, lng: 55.7369,
-    hours: everyDay([['07:00', '23:00']], [['07:00', '11:30'], ['13:30', '23:00']]),
-  },
+    lat: 24.2533, lng: 55.7369, // TODO: confirm the exact map pin
+  }),
 ];
 
 export const branchById = (id: string) => branches.find((b) => b.id === id);

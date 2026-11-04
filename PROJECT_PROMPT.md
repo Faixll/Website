@@ -1,6 +1,6 @@
-# Project prompt: Hawar Al Bada Fresh Meat Trading — online store
+# Project prompt: Hawar Albada Fresh Meat Trading — online store
 
-You are continuing work on an existing e-commerce website for **Hawar Al Bada Fresh Meat Trading** (Arabic name used so far: **حوار البدع لتجارة اللحوم الطازجة**, spelling still to be confirmed against the trade license), a meat and livestock store in the **UAE**. The code is in `C:\Users\fmall\L7m`. Ask me before choosing anything not listed here.
+You are continuing work on an existing e-commerce website for **Hawar Albada Fresh Meat Trading** (Arabic name used so far: **حوار البدع لتجارة اللحوم الطازجة**, spelling still to be confirmed against the trade license), a meat and livestock store in the **UAE**. The code is in `C:\Users\fmall\L7m`. Ask me before choosing anything not listed here.
 
 ## Goal
 Customers find a product and finish an order in about three taps. Fast, clean, easy to search. Accounts are optional; guest checkout must always work. Most customers arrive from Instagram on phones, so design mobile-first.
