@@ -8,6 +8,7 @@ import { phoneDisplay, waLink } from '@/lib/format';
 import { LangToggle } from './Chrome';
 import { Button, ButtonLink } from './Button';
 import { Icon } from './Icon';
+import { RewardsProfile } from './Rewards';
 import { useStore } from './StoreProvider';
 
 /** Same key the checkout reads, so saved details prefill it. Stored only in this browser. */
@@ -90,6 +91,7 @@ export function ProfileView() {
       </form>
 
       <div className="stack" style={{ gap: 'var(--s4)' }}>
+        <RewardsProfile />
         <section className="panel-card" aria-labelledby="pf-lang">
           <h2 id="pf-lang">{t.language}</h2>
           <LangToggle className="btn btn-secondary btn-md" />

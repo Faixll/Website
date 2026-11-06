@@ -96,11 +96,14 @@ export const site = {
   },
 
   /**
-   * Loyalty points (only active when Supabase accounts are configured; currently off).
+   * Loyalty points (Part B — shown only when REWARDS_ENABLED=true and a database + code sender are set up).
+   * TODO(client): POINTS_PER_AED=1 and AED_PER_100_POINTS=5 are EXAMPLE values — the client must decide.
+   * Set NEXT_PUBLIC_POINTS_PER_AED / NEXT_PUBLIC_AED_PER_100_POINTS at build time (read by server and browser).
    */
   points: {
-    perAed: 1,
-    moneyOff: { points: 500, aed: 25 },
+    perAed: Number(process.env.NEXT_PUBLIC_POINTS_PER_AED ?? 1),
+    moneyOff: { points: 100, aed: Number(process.env.NEXT_PUBLIC_AED_PER_100_POINTS ?? 5) },
+    /** Not offered in the UI (money off only); kept so the shared rules still validate. */
     freeDelivery: { points: 150 },
   },
 

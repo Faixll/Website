@@ -7,12 +7,35 @@ import { scrollToId, useScrollDirection } from './hooks';
 import { categoryIcon, Icon } from './Icon';
 import { useStore } from './StoreProvider';
 
+/** Height of the sticky chrome above the sections: header + chip bar (measured, with the CSS defaults as fallback). */
+function chromeHeight() {
+  const header = document.querySelector('.site-header')?.getBoundingClientRect().height ?? 56;
+  const bar = document.querySelector('.chip-bar')?.getBoundingClientRect().height ?? 64;
+  return header + bar;
+}
+
+/** Holds the scroll-spy still until the page stops moving: `scrollend` where it exists, 800ms otherwise. */
+function lockSpy(lock: { current: boolean }) {
+  lock.current = true;
+  let done = false;
+  const release = () => {
+    if (done) return;
+    done = true;
+    lock.current = false;
+    window.removeEventListener('scrollend', release);
+  };
+  if ('onscrollend' in window) window.addEventListener('scrollend', release, { once: true });
+  setTimeout(release, 800);
+}
+
 /**
  * The single category selector (compact pills, ≤64px high).
  * - mode "scroll" (home): highlights the section in view; tapping scrolls to it (smooth only for that tap).
  * - mode "filter" (search page): toggles the filter via onSelect.
  * - mode "link" (desktop header row on other pages): links to the category page.
- * `sticky`: sticks under the header, hides while scrolling down and returns when scrolling up.
+ * `sticky`: sticks under the header. On phones it rides up to the top of the screen while the user scrolls
+ * down (the header slides away at the same time) and drops back under the header on the way up — transform
+ * only, so the page height never changes (P1).
  */
 export function CategoryChips({
   mode, active, sticky, onSelect, withAll,
@@ -26,20 +49,25 @@ export function CategoryChips({
   const { t, lang } = useStore();
   const [current, setCurrent] = useState<CategoryId | ''>(active ?? '');
   const rowRef = useRef<HTMLDivElement>(null);
+  const lockRef = useRef(false);
   const dir = useScrollDirection(240);
 
   useEffect(() => { if (mode !== 'scroll') setCurrent(active ?? ''); }, [mode, active]);
 
   // Scroll-spy (home): which category section is under the sticky bars.
+  // The top margin is the real sticky chrome height, so the highlighted chip matches the section the user
+  // sees under the bars. `lockRef` holds the spy still while a chip tap animates the page, otherwise the
+  // highlight flickers through every section on the way (P1).
   useEffect(() => {
     if (mode !== 'scroll') return;
     const sections = categories.map((c) => document.getElementById(`cat-${c.id}`)).filter(Boolean) as HTMLElement[];
     const io = new IntersectionObserver(
       (entries) => {
+        if (lockRef.current) return;
         const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
         if (visible[0]) setCurrent(visible[0].target.id.replace('cat-', '') as CategoryId);
       },
-      { rootMargin: '-35% 0px -60% 0px' },
+      { rootMargin: `-${Math.round(chromeHeight())}px 0px -55% 0px` },
     );
     sections.forEach((s) => io.observe(s));
     return () => io.disconnect();
@@ -72,9 +100,8 @@ export function CategoryChips({
           onClick={(e) => {
             e.preventDefault();
             setCurrent(id);
-            const header = document.querySelector('.site-header')?.getBoundingClientRect().height ?? 56;
-            const bar = rowRef.current?.closest('.chip-bar')?.getBoundingClientRect().height ?? 64;
-            scrollToId(`cat-${id}`, header + bar + 8);
+            lockSpy(lockRef);
+            scrollToId(`cat-${id}`, chromeHeight() + 8);
           }}>{content}</a>
       );
     }
@@ -92,7 +119,7 @@ export function CategoryChips({
   );
 
   return (
-    <nav aria-label={t.categories} data-testid="category-chips" className={sticky ? `chip-bar${dir === 'down' ? ' hide' : ''}` : undefined}>
+    <nav aria-label={t.categories} data-testid="category-chips" className={sticky ? `chip-bar${dir === 'down' ? ' raised' : ''}` : undefined}>
       {sticky ? <div className="container">{row}</div> : row}
     </nav>
   );

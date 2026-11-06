@@ -42,6 +42,7 @@
   --maxw: 1200px;
   --gutter: 16px;
   --header-h: 56px;
+  --chips-h: 64px;
   --tabbar-h: 0px;
   --ease: cubic-bezier(.22, 1, .36, 1);
 }
@@ -53,7 +54,7 @@ html[lang='en'] { --f-hero: var(--font-playfair); --f-head: var(--font-playfair)
 
 *, *::before, *::after { box-sizing: border-box; }
 /* P1: no global smooth scrolling (it is applied in JS for chip/anchor taps only); keep native scroll anchoring. */
-html { -webkit-text-size-adjust: 100%; overflow-anchor: auto; scroll-padding-top: calc(var(--header-h) + 72px); }
+html { -webkit-text-size-adjust: 100%; overflow-anchor: auto; scroll-padding-top: calc(var(--header-h) + var(--chips-h) + 8px); }
 body {
   margin: 0;
   background: var(--bg);
@@ -180,7 +181,16 @@ html[lang='en'] .caps { text-transform: uppercase; letter-spacing: .06em; }
 .grid-2 { display: grid; gap: var(--s3); }
 @media (min-width: 560px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
 .check { display: flex; align-items: center; gap: 10px; min-height: var(--tap); cursor: pointer; }
-.check input { width: 22px; height: 22px; accent-color: var(--red); flex: none; }
+/* Custom checkbox / radio (no default browser controls). */
+.check input { -webkit-appearance: none; appearance: none; margin: 0; width: 22px; height: 22px; flex: none; display: grid; place-items: center;
+  border: 2px solid var(--line-strong); border-radius: 6px; background: var(--white); transition: background-color .15s var(--ease), border-color .15s var(--ease); cursor: pointer; }
+.check input[type='radio'] { border-radius: 50%; }
+.check input::after { content: ''; width: 12px; height: 7px; border: solid var(--white); border-width: 0 0 2.5px 2.5px; transform: translateY(-1px) rotate(-45deg) scale(0); transition: transform .15s var(--ease); }
+.check input[type='radio']::after { width: 8px; height: 8px; border: 0; border-radius: 50%; background: var(--white); transform: scale(0); }
+.check input:checked { background: var(--red); border-color: var(--red); }
+.check input:checked::after { transform: translateY(-1px) rotate(-45deg) scale(1); }
+.check input[type='radio']:checked::after { transform: scale(1); }
+.check input:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 .options { display: grid; gap: var(--s2); }
 .option {
   position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 10px 14px;
@@ -263,11 +273,22 @@ html[lang='en'] .logo .name { font-family: var(--f-head); font-weight: 700; font
 .suggest .s-empty { padding: 16px; color: var(--muted); }
 
 /* ======================== chips (the single category selector) ======================== */
+/* P1: a fixed height from the variable, so the sticky top (header + chips) is known and never changes
+   while scrolling. The chip row inside is 44px tall + 19px padding = the 63px content box. */
 .chip-bar {
-  position: sticky; top: var(--header-h); z-index: 40; background: var(--bg); border-bottom: 1px solid var(--line);
+  position: sticky; top: var(--header-h); z-index: 40; height: var(--chips-h); background: var(--bg); border-bottom: 1px solid var(--line);
   transition: transform .25s var(--ease);
 }
-.chip-bar.hide { transform: translateY(calc(-100% - var(--header-h))); }
+/* Landing on /ar#cat-sheep clears the header and the chip bar. */
+[id^='cat-'] { scroll-margin-top: calc(var(--header-h) + var(--chips-h) + 8px); }
+/* P1: on phones the header slides away on the way down and the chip row takes its place at the top of the
+   screen, so the sticky chrome is only the 64px chip bar. Both moves are transforms of the same duration,
+   so they travel together and nothing in the layout changes. */
+@media (max-width: 767px) {
+  .site-header { transition: background-color .25s var(--ease), transform .25s var(--ease); }
+  .site-header.hide { transform: translateY(-100%); }
+  .chip-bar.raised { transform: translateY(calc(-1 * var(--header-h))); }
+}
 .chip-row { display: flex; gap: var(--s2); overflow-x: auto; scrollbar-width: none; padding-block: 10px 9px; overscroll-behavior-x: contain; scroll-snap-type: x proximity; }
 .chip-row::-webkit-scrollbar { display: none; }
 .chip {
@@ -519,7 +540,8 @@ body.hide-tabbar .wa-fab, body.has-actionbar .wa-fab { display: none; }
 .line .l-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
 .empty { text-align: center; padding: 40px 16px; display: grid; gap: 12px; justify-items: center; color: var(--muted); }
 
-.toast-wrap { position: fixed; z-index: 90; top: 12px; inset-inline: 0; display: flex; justify-content: center; pointer-events: none; }
+/* P1: below the header, so the "added to cart" toast never covers the header or the ticker text. */
+.toast-wrap { position: fixed; z-index: 90; top: calc(var(--header-h) + 8px); inset-inline: 0; display: flex; justify-content: center; pointer-events: none; }
 .toast { background: var(--ink); color: var(--on-ink); padding: 10px 18px; border-radius: var(--pill); font-weight: 600; box-shadow: var(--shadow-float); display: flex; align-items: center; gap: 8px; }
 .fly { position: fixed; z-index: 95; width: 56px; height: 56px; border-radius: 12px; overflow: hidden; pointer-events: none; box-shadow: var(--shadow-float); }
 
@@ -577,6 +599,7 @@ body.hide-tabbar .wa-fab, body.has-actionbar .wa-fab { display: none; }
 .alert.error-box { border-color: var(--red); color: var(--red); background: var(--surface); }
 .earn { display: flex; align-items: center; gap: 6px; color: var(--ink); font-weight: 600; font-size: 14px; min-height: var(--tap); }
 .earn svg { color: var(--gold-ink); }
+.earn-link { border: 0; background: none; padding: 0; color: var(--red); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; text-align: start; font: inherit; font-weight: 600; font-size: 14px; }
 .promo-row { display: flex; gap: 8px; }
 .applied { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 12px; background: var(--deep); border-radius: var(--r-btn); }
 @media (max-width: 959px) {

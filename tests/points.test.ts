@@ -13,30 +13,31 @@ describe('points rules', () => {
     assert.equal(pointsEarned(300, 25), 275);
   });
 
+  // Example rule (client to confirm): 100 points = 5 AED off. Free delivery (150 points) stays in the rules but is not offered in the UI.
   it('prices redemptions', () => {
-    assert.equal(pointsFor({ blocks: 2, freeDelivery: false }), 1000);
-    assert.equal(pointsFor({ blocks: 1, freeDelivery: true }), 650);
+    assert.equal(pointsFor({ blocks: 2, freeDelivery: false }), 200);
+    assert.equal(pointsFor({ blocks: 1, freeDelivery: true }), 250);
   });
 
   it('limits money-off blocks by balance and subtotal', () => {
-    assert.equal(maxBlocks(1240, 1000, false), 2);
-    assert.equal(maxBlocks(1240, 1000, true), 2); // 1240 - 150 = 1090 → 2 blocks
-    assert.equal(maxBlocks(640, 1000, true), 0); // 640 - 150 = 490 → 0
-    assert.equal(maxBlocks(5000, 60, false), 2); // subtotal 60 → at most 2 × 25
+    assert.equal(maxBlocks(240, 1000, false), 2);
+    assert.equal(maxBlocks(1240, 1000, false), 12);
+    assert.equal(maxBlocks(5000, 12, false), 2); // subtotal 12 → at most 2 × 5
+    assert.equal(maxBlocks(99, 1000, false), 0);
   });
 
-  it('validates redemptions', () => {
-    assert.deepEqual(checkRedemption({ blocks: 1, freeDelivery: false }, 600, 100, 15), { ok: true, discount: 25, freeDelivery: false, points: 500 });
-    assert.deepEqual(checkRedemption({ blocks: 2, freeDelivery: false }, 600, 100, 15), { ok: false, error: 'not_enough_points' });
+  it('validates redemptions (server side)', () => {
+    assert.deepEqual(checkRedemption({ blocks: 1, freeDelivery: false }, 150, 100, 15), { ok: true, discount: 5, freeDelivery: false, points: 100 });
+    assert.deepEqual(checkRedemption({ blocks: 2, freeDelivery: false }, 150, 100, 15), { ok: false, error: 'not_enough_points' });
     assert.deepEqual(checkRedemption({ blocks: 0, freeDelivery: true }, 600, 250, 0), { ok: false, error: 'no_delivery_fee' });
-    assert.deepEqual(checkRedemption({ blocks: 3, freeDelivery: false }, 5000, 60, 0), { ok: false, error: 'too_much_discount' });
+    assert.deepEqual(checkRedemption({ blocks: 3, freeDelivery: false }, 5000, 12, 0), { ok: false, error: 'too_much_discount' });
     assert.deepEqual(checkRedemption({ blocks: -1, freeDelivery: false }, 5000, 60, 0), { ok: false, error: 'bad_request' });
     assert.deepEqual(checkRedemption({ blocks: 1.5, freeDelivery: false }, 5000, 60, 0), { ok: false, error: 'bad_request' });
   });
 
   it('shows progress to the next reward', () => {
-    assert.deepEqual(nextReward(0), { blocksNow: 0, aedNow: 0, toNext: 500, pct: 0 });
-    assert.deepEqual(nextReward(1200), { blocksNow: 2, aedNow: 50, toNext: 300, pct: 40 });
+    assert.deepEqual(nextReward(0), { blocksNow: 0, aedNow: 0, toNext: 100, pct: 0 });
+    assert.deepEqual(nextReward(240), { blocksNow: 2, aedNow: 10, toNext: 60, pct: 40 });
   });
 });
 

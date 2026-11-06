@@ -2,7 +2,6 @@
 
 import { Elements, ExpressCheckoutElement, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { loadStripe, type Stripe as StripeJs, type StripeExpressCheckoutElementConfirmEvent } from '@stripe/stripe-js';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { site } from '@/config/site';
@@ -14,7 +13,6 @@ import { money } from '@/lib/format';
 import { fulfilmentOf, priceOrder, validateOrder, type FieldErrors, type OrderInput, type PaymentMethod, type PricedOrder } from '@/lib/order';
 import { maxBlocks, NO_REDEMPTION, pointsEarned, type Redemption } from '@/lib/points';
 import { linePrice, totals as calcTotals } from '@/lib/pricing';
-import { accountsEnabled } from '@/lib/supabase/env';
 import { useAccount } from './AccountProvider';
 import { BranchStatusLine } from './BranchCard';
 import { SlotPicker } from './HomeParts';
@@ -73,21 +71,21 @@ export function Checkout() {
   }, [ready]);
 
   // Signed-in customers: prefill name and phone from their account (only empty fields).
-  const { profile } = useAccount();
+  const { me } = useAccount();
   useEffect(() => {
-    if (!profile) return;
+    if (!me) return;
     setForm((f) => ({
       ...f,
-      name: f.name || profile.name || '',
-      phone: f.phone || (profile.phone ? profile.phone.replace(/^\+971/, '0') : ''),
+      name: f.name || me.firstName || '',
+      phone: f.phone || me.phone.replace(/^\+971/, '0'),
     }));
-  }, [profile]);
+  }, [me]);
 
   // Discounts: a promo code and/or points. Re-priced on every change; dropped if they stop being valid.
   const [disc, setDisc] = useState<Discounts>({ redeem: NO_REDEMPTION, promo: '' });
   const [discError, setDiscError] = useState('');
   const f = fulfilmentOf(form);
-  const balance = profile?.points_balance ?? 0;
+  const balance = me?.points ?? 0;
   const priced = useMemo(() => priceOrder(lines, f, { redeem: disc.redeem, promoCode: disc.promo, balance }), [lines, f?.type, f && 'emirate' in f ? f.emirate : '', disc, balance]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (priced.ok) return;
@@ -138,7 +136,7 @@ function CheckoutForm({ form, setForm, totals, priced, disc, setDisc, discError,
   disc: Discounts; setDisc: (d: Discounts) => void; discError: string; setDiscError: (s: string) => void;
 }) {
   const { t, lang, slot, clear, saveLastOrder, setFulfilment } = useStore();
-  const { user, refresh: refreshAccount } = useAccount();
+  const { me, enabled: rewardsOn, openSignIn, refresh: refreshAccount } = useAccount();
   const earn = pointsEarned(totals.subtotal, totals.discount);
   const router = useRouter();
   const stripe = useStripeSafe();
@@ -449,11 +447,11 @@ function CheckoutForm({ form, setForm, totals, priced, disc, setDisc, discError,
             )}
             <div className="grand"><span>{t.grandTotal}</span><span className="num">{total}</span></div>
             <span className="vat num">{t.vatIncluded(money(totals.vat, lang))}</span>
-            {earn > 0 && (user ? (
-              <span className="earn"><Icon name="check" />{t.youWillEarn(earn)}</span>
-            ) : accountsEnabled ? (
-              <Link className="earn" href={`/${lang}/account?next=checkout`}><Icon name="plus" />{t.signInToEarn(earn)}</Link>
-            ) : null)}
+            {earn > 0 && rewardsOn && (me ? (
+              <span className="earn" data-testid="earn-line"><Icon name="gift" />{t.youWillEarn(earn)}</span>
+            ) : (
+              <button type="button" className="earn earn-link" onClick={() => openSignIn()} data-testid="earn-signin"><Icon name="gift" />{t.signInToEarn(earn)}</button>
+            ))}
           </div>
           {wide && payButton}
         </div>
@@ -467,15 +465,13 @@ function DiscountsPanel({ totals, priced, disc, setDisc, discError, setDiscError
   discError: string; setDiscError: (s: string) => void; form: Form;
 }) {
   const { t, lang, lines } = useStore();
-  const { user, profile } = useAccount();
+  const { me } = useAccount();
   const [code, setCode] = useState(disc.promo);
-  const balance = profile?.points_balance ?? 0;
+  const balance = me?.points ?? 0;
   const off = site.points.moneyOff;
-  const fd = site.points.freeDelivery;
   const hasPromo = !!priced.promoCode;
-  const promoGivesFreeDelivery = hasPromo && priced.pointsDiscount === 0 && totals.deliveryFee === 0 && totals.baseDeliveryFee > 0 && !disc.redeem.freeDelivery;
-  const blocks = maxBlocks(balance, totals.subtotal, disc.redeem.freeDelivery);
-  const canFreeDelivery = totals.baseDeliveryFee > 0 && !promoGivesFreeDelivery && balance - disc.redeem.blocks * off.points >= fd.points;
+  const blocks = maxBlocks(balance, totals.subtotal, false);
+  const using = disc.redeem.blocks > 0;
 
   const apply = () => {
     if (!code.trim()) return;
@@ -507,34 +503,19 @@ function DiscountsPanel({ totals, priced, disc, setDisc, discError, setDiscError
         )}
       </div>
 
-      {user && (
-        <fieldset className="stack" style={{ border: 0, padding: 0, margin: 0, gap: 8 }}>
-          <legend className="label" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: 6 }}>
-            <span>{t.usePoints}</span>
-            <span className="muted num" style={{ fontWeight: 400 }}>{t.balanceIs(t.pointsN(balance))}</span>
-          </legend>
-          {balance < Math.min(off.points, fd.points) && <p className="hint">{t.pointsNeedMore(Math.min(off.points, fd.points))}</p>}
-          {!hasPromo && (blocks > 0 || disc.redeem.blocks > 0) && (
-            <div className="field">
-              <label htmlFor="co-blocks" style={{ fontWeight: 400 }}>{t.moneyOff}</label>
-              <select id="co-blocks" className="select" value={disc.redeem.blocks}
-                onChange={(e) => setDisc({ ...disc, redeem: { ...disc.redeem, blocks: Number(e.target.value) } })}>
-                <option value={0}>{t.noDiscount}</option>
-                {Array.from({ length: Math.max(blocks, disc.redeem.blocks) }, (_, i) => i + 1).map((n) => (
-                  <option key={n} value={n}>{t.blockOpt(n * off.points, money(n * off.aed, lang))}</option>
-                ))}
-              </select>
-            </div>
-          )}
-          {(canFreeDelivery || disc.redeem.freeDelivery) && (
-            <label className="check">
-              <input type="checkbox" checked={disc.redeem.freeDelivery}
-                onChange={(e) => setDisc({ ...disc, redeem: { ...disc.redeem, freeDelivery: e.target.checked } })} />
-              {t.freeDeliveryOpt(fd.points)}
-            </label>
-          )}
+      {me && (
+        <div className="stack" style={{ gap: 8 }} data-testid="use-points">
+          <label className="check switch">
+            <input type="checkbox" role="switch" checked={using} disabled={!using && (blocks === 0 || hasPromo)}
+              onChange={(e) => setDisc({ ...disc, redeem: { blocks: e.target.checked ? blocks : 0, freeDelivery: false } })} />
+            <span>
+              {blocks > 0 || using ? t.pointsUse((using ? disc.redeem.blocks : blocks) * off.points, money((using ? disc.redeem.blocks : blocks) * off.aed, lang)) : t.usePoints}
+              <br /><small className="muted num">{t.balanceIs(t.pointsN(balance))}</small>
+            </span>
+          </label>
+          {balance < off.points && <p className="hint">{t.pointsNeedMore(off.points)}</p>}
           {balance >= off.points && <p className="hint">{t.promoOrPoints}</p>}
-        </fieldset>
+        </div>
       )}
       {discError && <p className="error" id="co-disc-e" role="alert">{discError}</p>}
     </section>

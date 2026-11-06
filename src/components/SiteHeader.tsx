@@ -7,6 +7,7 @@ import { site } from '@/config/site';
 import type { CategoryId } from '@/data/catalog';
 import { CategoryChips } from './Chips';
 import { CartButton, LangToggle } from './Chrome';
+import { useScrollDirection } from './hooks';
 import { Icon } from './Icon';
 import { RewardsChip } from './Rewards';
 import { SearchBox } from './SearchBox';
@@ -17,10 +18,13 @@ import { useStore } from './StoreProvider';
  * - phone (<768px): a single 56px row — mark + name, rewards chip (when enabled), language. Search and cart live in the tab bar.
  * - tablet/desktop: horizontal logo, search, account, language, cart. Category chips sit below it (`chips`).
  * A 3px red scroll-progress bar runs along its top; after 40px of scroll the logo shrinks and the background blurs.
+ * P1: the height never changes (the logo only scales), and on phones the whole bar slides away while the user
+ * scrolls down and comes back on the way up, so the category chips are the only sticky chrome left.
  */
 export function SiteHeader({ q, activeCat, chips = false }: { q?: string; activeCat?: CategoryId; chips?: boolean }) {
   const { t, lang } = useStore();
   const [compact, setCompact] = useState(false);
+  const dir = useScrollDirection(240);
   const { scrollYProgress } = useScroll();
 
   useEffect(() => {
@@ -32,7 +36,7 @@ export function SiteHeader({ q, activeCat, chips = false }: { q?: string; active
 
   return (
     <>
-      <header className={`site-header${compact ? ' compact' : ''}`} data-testid="site-header">
+      <header className={`site-header${compact ? ' compact' : ''}${dir === 'down' ? ' hide' : ''}`} data-testid="site-header">
         <motion.div className="scroll-progress" style={{ scaleX: scrollYProgress }} aria-hidden />
         <div className="container bar">
           <Link href={`/${lang}`} className="logo" aria-label={site.name[lang]}>

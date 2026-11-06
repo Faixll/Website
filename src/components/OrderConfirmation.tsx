@@ -30,7 +30,7 @@ export function OrderConfirmation({ id, paid, points = 0 }: { id: string; paid: 
       <h1 style={{ fontSize: 24 }}>{t.thanks}</h1>
       <p>{t.orderNo}: <b className="num ltr">{id}</b>{paid && <> · <span className="badge badge-fresh">{t.paid}</span></>}</p>
       <p className="muted">{t.willCall}</p>
-      {points > 0 && <p className="earn"><Icon name="check" />{t.pointsComing(points)}</p>}
+      {points > 0 && <p className="earn" data-testid="confirm-points"><Icon name="gift" />{t.pointsOnDelivery(points)}</p>}
       <ButtonLink href={`/${lang}`}>{t.backHome}</ButtonLink>
     </div>
   );

@@ -1,7 +1,6 @@
 /**
- * Reviews data layer. Only REAL, approved reviews are ever shown — never sample or fake ones.
- * Part A: no database yet, so this returns an empty list (the UI shows the empty state).
- * Part B replaces the body with a database query (see src/lib/server/reviews-db.ts).
+ * Reviews shown on the site. Only REAL, approved reviews from customers with a delivered order —
+ * never sample or fake ones. Without a database the list is empty (the UI shows the empty state).
  */
 export type Review = {
   id: string;
@@ -20,7 +19,22 @@ export function summarize(reviews: Review[]): ReviewSummary {
   return { reviews, average: Math.round(avg * 10) / 10, count: reviews.length };
 }
 
+/** Server only. The database is imported lazily so client bundles never include it. */
 export async function getReviews(productId?: string): Promise<ReviewSummary> {
-  void productId;
-  return summarize([]);
+  if (typeof window !== 'undefined' || !process.env.DATABASE_URL) return summarize([]);
+  try {
+    const { getDb } = await import('./server/db');
+    const { approvedReviews, reviewStats } = await import('./db/store');
+    const db = getDb();
+    if (!db) return summarize([]);
+    const [rows, stats] = await Promise.all([approvedReviews(db, productId), reviewStats(db, productId)]);
+    return {
+      reviews: rows.map((r) => ({ id: String(r.id), firstName: r.firstName, stars: r.stars as Review['stars'], text: r.text, createdAt: r.createdAt.toISOString(), verified: true })),
+      average: stats.average,
+      count: stats.count,
+    };
+  } catch (e) {
+    console.error('reviews unavailable', e);
+    return summarize([]);
+  }
 }

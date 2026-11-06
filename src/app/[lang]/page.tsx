@@ -19,6 +19,9 @@ import { heroVideoReady } from '@/lib/server/hero';
  * → "Most ordered" red band (only products not repeated below) → one section per category → rewards band (flag)
  * → reviews → branch teaser → footer (layout).
  */
+/** Approved reviews appear within 5 minutes. */
+export const revalidate = 300;
+
 export default async function Home({ params }: { params: Promise<{ lang: Lang }> }) {
   const { lang } = await params;
   const t = getDict(lang);

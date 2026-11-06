@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { notifyBusiness } from '@/lib/server/notify';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { setOrderStatus } from '@/lib/db/store';
+import { getDb } from '@/lib/server/db';
 
 /**
  * Stripe webhook: the source of truth that a card / Apple Pay / Google Pay order was paid.
@@ -9,8 +10,9 @@ import { supabaseAdmin } from '@/lib/supabase/server';
  * payment_intent.succeeded, payment_intent.payment_failed and payment_intent.canceled,
  * and set STRIPE_WEBHOOK_SECRET.
  *
- * Paid → order marked paid and points credited. Failed/canceled → points spent on it are refunded.
- * Both database calls are idempotent, so Stripe's retries are harmless.
+ * Paid → order becomes "new" (to prepare). Failed/canceled → points spent on it are given back.
+ * Points are earned only when the shop marks the order delivered. Both changes happen at most once,
+ * so Stripe's retries are harmless.
  */
 export async function POST(req: Request) {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -31,14 +33,15 @@ export async function POST(req: Request) {
   const pi = event.data.object as Stripe.PaymentIntent;
   const orderId = pi.metadata.orderId;
   const paid = event.type === 'payment_intent.succeeded';
-  const db = supabaseAdmin();
+  const db = getDb();
   if (db && orderId) {
-    const { error } = paid
-      ? await db.rpc('complete_order', { p_order: orderId, p_status: 'paid', p_payment_intent: pi.id })
-      : await db.rpc('cancel_order', { p_order: orderId, p_status: 'payment_failed' });
-    // 500 makes Stripe retry later (e.g. database briefly unavailable).
-    // Unknown order (e.g. a Stripe test event): acknowledge so Stripe stops retrying.
-    if (error && !error.message.includes('order_not_found')) { console.error('webhook db error', error); return NextResponse.json({ error: 'db' }, { status: 500 }); }
+    try {
+      // false = unknown order or already moved on (e.g. a Stripe test event or a retry): acknowledge either way.
+      await setOrderStatus(db, orderId, paid ? 'new' : 'payment_failed', { paymentIntent: pi.id });
+    } catch (e) {
+      console.error('webhook db error', e);
+      return NextResponse.json({ error: 'db' }, { status: 500 }); // Stripe retries later
+    }
   }
   await notifyBusiness('order-paid', {
     orderId, status: paid ? 'paid' : 'payment_failed', amount: pi.amount / 100, currency: pi.currency.toUpperCase(), paymentIntent: pi.id,

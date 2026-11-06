@@ -15,6 +15,9 @@ import { fromPrice } from '@/lib/search';
 
 type Params = Promise<{ lang: Lang; id: string }>;
 
+/** Approved reviews appear within 5 minutes. */
+export const revalidate = 300;
+
 export function generateStaticParams() {
   return LANGS.flatMap((lang) => products.map((p) => ({ lang, id: p.id })));
 }

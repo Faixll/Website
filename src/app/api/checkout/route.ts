@@ -7,11 +7,12 @@ import { normaliseUaeMobile } from '@/lib/format';
 import { cleanLines, fulfilmentOf, newOrderId, priceOrder, validateOrder, type OrderInput } from '@/lib/order';
 import { NO_REDEMPTION, pointsEarned, type Redemption } from '@/lib/points';
 import { linePrice } from '@/lib/pricing';
+import { balanceOf, NotEnoughPoints, placeOrder, setOrderStatus, setPaymentIntent, toFils } from '@/lib/db/store';
+import { fail, str } from '@/lib/server/api';
+import { getDb } from '@/lib/server/db';
+import { rewardsOn } from '@/lib/server/features';
 import { notifyBusiness } from '@/lib/server/notify';
-import { currentProfile, supabaseAdmin } from '@/lib/supabase/server';
-
-const str = (v: unknown, max = 200) => String(v ?? '').trim().slice(0, max);
-const fail = (error: string, status: number, extra: Record<string, unknown> = {}) => NextResponse.json({ error, ...extra }, { status });
+import { customerIdFromCookie } from '@/lib/server/session';
 
 export async function POST(req: Request) {
   const b = await req.json().catch(() => null);
@@ -41,13 +42,16 @@ export async function POST(req: Request) {
   const errors = validateOrder(input);
   if (Object.keys(errors).length) return fail('invalid', 422, { fields: errors });
 
-  const profile = await currentProfile();
-  if (wantsPoints && !profile) return fail('sign_in_required', 401);
+  // Orders are saved whenever a database is configured. Points only when rewards are switched on and signed in.
+  const db = getDb();
+  const customerId = db && rewardsOn() ? await customerIdFromCookie() : null;
+  if (wantsPoints && !customerId) return fail('sign_in_required', 401);
+  const balance = customerId && db ? await balanceOf(db, customerId) : 0;
 
   // Prices are recomputed from the catalogue; nothing price-related from the browser is trusted.
   const lines = cleanLines(input.lines);
   const f = fulfilmentOf(input);
-  const priced = priceOrder(lines, f, { redeem, promoCode, balance: profile?.points_balance ?? 0 });
+  const priced = priceOrder(lines, f, { redeem, promoCode, balance });
   if (!priced.ok) return fail(priced.error, 409);
   const t = priced.totals;
 
@@ -55,7 +59,7 @@ export async function POST(req: Request) {
   const phone = normaliseUaeMobile(input.phone)!;
   const payment = t.total === 0 ? 'points' : input.payment;
   if (payment !== 'cod' && payment !== 'points' && t.total < 2) return fail('amount_too_small', 409); // Stripe minimum
-  const earnable = profile ? pointsEarned(t.subtotal, t.discount) : 0;
+  const earnable = customerId ? pointsEarned(t.subtotal, t.discount) : 0;
 
   const details = {
     fulfilment:
@@ -75,25 +79,24 @@ export async function POST(req: Request) {
     pointsDiscount: priced.pointsDiscount,
     lang: input.lang,
   };
-  const status = payment === 'points' ? 'paid' : payment === 'cod' ? 'pending_cod' : 'awaiting_payment';
+  const status = payment === 'cod' || payment === 'points' ? 'new' : 'awaiting_payment';
   const record = {
-    id: orderId, user_id: profile?.id ?? null, status, payment, name: input.name, phone,
-    subtotal: t.subtotal, discount: t.discount, delivery_fee: t.deliveryFee, total: t.total, vat: t.vat,
-    points_redeemed: priced.pointsUsed, points_earnable: earnable, promo_code: priced.promoCode, details,
+    id: orderId, customerId, status, payment, name: input.name, phone,
+    subtotal: t.subtotal, discount: t.discount, deliveryFee: t.deliveryFee, total: t.total, vat: t.vat,
+    pointsRedeemed: priced.pointsUsed, pointsEarnable: earnable, promoCode: priced.promoCode, details,
   };
 
-  // Persist (when Supabase is configured). Spending points happens atomically with the insert.
-  const db = supabaseAdmin();
+  // Save the order. Spending points happens in the same transaction (balance re-checked with the row locked).
   if (db) {
-    const { error } = await db.rpc('place_order', { p_order: record });
-    if (error) {
-      if (error.message.includes('insufficient_points')) return fail('not_enough_points', 409);
-      console.error('place_order failed', error);
+    try {
+      await placeOrder(db, {
+        ...record, subtotal: toFils(t.subtotal), discount: toFils(t.discount), deliveryFee: toFils(t.deliveryFee), total: toFils(t.total), vat: toFils(t.vat),
+      });
+    } catch (e) {
+      if (e instanceof NotEnoughPoints) return fail('not_enough_points', 409);
+      console.error('saving order failed', e);
       return fail('order_failed', 500);
     }
-    if (payment === 'points') await db.rpc('complete_order', { p_order: orderId, p_status: 'paid' });
-  } else if (wantsPoints) {
-    return fail('accounts_not_configured', 503);
   }
 
   const notify = { ...record, currency: site.currency };
@@ -103,7 +106,7 @@ export async function POST(req: Request) {
   }
 
   const key = process.env.STRIPE_SECRET_KEY;
-  const cancel = async () => { if (db) await db.rpc('cancel_order', { p_order: orderId, p_status: 'payment_failed' }); };
+  const cancel = async () => { if (db) await setOrderStatus(db, orderId, 'payment_failed'); };
   if (!key) { await cancel(); return fail('payments_not_configured', 503); }
 
   try {
@@ -121,7 +124,7 @@ export async function POST(req: Request) {
         summary: details.lines.map((l) => `${l.qty}x ${l.product} (${l.size}, ${l.cut})`).join('; ').slice(0, 480),
       },
     });
-    if (db) await db.from('orders').update({ payment_intent: intent.id }).eq('id', orderId);
+    if (db) await setPaymentIntent(db, orderId, intent.id);
     await notifyBusiness('order', { ...notify, paymentIntent: intent.id });
     return NextResponse.json({ orderId, total: t.total, clientSecret: intent.client_secret, pointsEarnable: earnable });
   } catch (e) {

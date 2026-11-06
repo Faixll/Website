@@ -1,76 +1,80 @@
 'use client';
-
-import type { User } from '@supabase/supabase-js';
+/**
+ * Signed-in customer (rewards). Does nothing while rewards are switched off — guests never fetch anything.
+ * The session is an httpOnly cookie; the browser only learns name, phone and points from /api/me.
+ */
+import dynamic from 'next/dynamic';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { supabaseBrowser } from '@/lib/supabase/browser';
-import { accountsEnabled } from '@/lib/supabase/env';
+import { useFeatures } from './Features';
 
-export type Profile = { id: string; phone: string | null; name: string | null; role: 'customer' | 'staff'; points_balance: number };
+export type Me = { id: string; firstName: string; phone: string; points: number };
+export type MyOrder = { id: string; status: string; total: number; createdAt: string; pointsEarnable: number };
 
 type Account = {
   enabled: boolean;
   loading: boolean;
-  user: User | null;
-  profile: Profile | null;
+  me: Me | null;
+  orders: MyOrder[];
+  reviewable: string[];
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
+  /** Opens the sign-in sheet; `then` runs after a successful sign-in. */
+  openSignIn: (then?: () => void) => void;
 };
 
 const Ctx = createContext<Account | null>(null);
+const SignInSheet = dynamic(() => import('./SignInSheet').then((m) => m.SignInSheet), { ssr: false });
 
 export function AccountProvider({ children }: { children: React.ReactNode }) {
-  const [loading, setLoading] = useState(accountsEnabled);
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const { rewards } = useFeatures();
+  const [loading, setLoading] = useState(rewards);
+  const [me, setMe] = useState<Me | null>(null);
+  const [orders, setOrders] = useState<MyOrder[]>([]);
+  const [reviewable, setReviewable] = useState<string[]>([]);
+  const [sheet, setSheet] = useState<{ then?: () => void } | null>(null);
 
-  const loadProfile = useCallback(async (u: User | null) => {
-    const sb = await supabaseBrowser();
-    if (!sb || !u) return setProfile(null);
-    const { data } = await sb.from('profiles').select('id, phone, name, role, points_balance').eq('id', u.id).maybeSingle();
-    setProfile((data as Profile) ?? null);
-  }, []);
-
-  useEffect(() => {
-    if (!accountsEnabled) return;
-    let alive = true;
-    let unsub = () => {};
-    // Only load Supabase when this browser has (or may have) a session; guests never download it.
-    const hasSession = document.cookie.includes('sb-') || /\/(account|staff)/.test(location.pathname);
-    if (!hasSession) { setLoading(false); return; }
-    supabaseBrowser().then(async (sb) => {
-      if (!sb || !alive) return;
-      const { data } = await sb.auth.getUser();
-      if (!alive) return;
-      setUser(data.user);
-      await loadProfile(data.user);
+  const refresh = useCallback(async () => {
+    if (!rewards) return;
+    try {
+      const r = await fetch('/api/me', { cache: 'no-store' });
+      const d = r.ok ? await r.json() : { customer: null };
+      setMe(d.customer ?? null);
+      setOrders(d.orders ?? []);
+      setReviewable(d.reviewable ?? []);
+    } catch {
+      /* offline: stay as we are */
+    } finally {
       setLoading(false);
-      const { data: sub } = sb.auth.onAuthStateChange((_e, session) => {
-        setUser(session?.user ?? null);
-        // Defer: calling Supabase inside this callback can deadlock the auth lock.
-        setTimeout(() => loadProfile(session?.user ?? null), 0);
-      });
-      unsub = () => sub.subscription.unsubscribe();
-    });
-    return () => { alive = false; unsub(); };
-  }, [loadProfile]);
+    }
+  }, [rewards]);
+
+  useEffect(() => { refresh(); }, [refresh]);
 
   const value = useMemo<Account>(() => ({
-    enabled: accountsEnabled,
+    enabled: rewards,
     loading,
-    user,
-    profile,
-    // Re-reads the session too, so signing in on the account page updates the whole site.
-    refresh: async () => {
-      const sb = await supabaseBrowser();
-      if (!sb) return;
-      const { data } = await sb.auth.getUser();
-      setUser(data.user);
-      await loadProfile(data.user);
+    me,
+    orders,
+    reviewable,
+    refresh,
+    signOut: async () => {
+      await fetch('/api/auth/signout', { method: 'POST' }).catch(() => {});
+      setMe(null); setOrders([]); setReviewable([]);
     },
-    signOut: async () => { await (await supabaseBrowser())?.auth.signOut(); setUser(null); setProfile(null); },
-  }), [loading, user, profile, loadProfile]); // eslint-disable-line react-hooks/exhaustive-deps
+    openSignIn: (then) => { if (rewards) setSheet({ then }); },
+  }), [rewards, loading, me, orders, reviewable, refresh]);
 
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+  return (
+    <Ctx.Provider value={value}>
+      {children}
+      {sheet && (
+        <SignInSheet
+          onClose={() => setSheet(null)}
+          onDone={async () => { const then = sheet.then; setSheet(null); await refresh(); then?.(); }}
+        />
+      )}
+    </Ctx.Provider>
+  );
 }
 
 export function useAccount() {
