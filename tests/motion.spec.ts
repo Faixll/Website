@@ -29,7 +29,7 @@ test.describe('reduced motion', () => {
     await page.getByTestId('quick-add').first().click();
     const samples: string[] = [];
     for (let i = 0; i < 6; i++) {
-      samples.push(await page.getByTestId('open-cart').locator('.tab-ico').evaluate((el) => getComputedStyle(el).transform));
+      samples.push(await page.getByTestId('tab-cart').locator('.tab-ico').evaluate((el) => getComputedStyle(el).transform));
       await page.waitForTimeout(50);
     }
     for (const s of samples) expect(s === 'none' || s === 'matrix(1, 0, 0, 1, 0, 0)', s).toBe(true);

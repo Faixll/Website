@@ -51,7 +51,7 @@ export function Stepper({
         <Icon name="minus" size={20} />
       </button>
       {editable ? (
-        <span className="amount-field">
+        <span className="amount-field" onClick={(e) => e.currentTarget.querySelector("input")?.focus()}>
           <label htmlFor={id} className="sr-only">{t.typeAmount(min, max)}</label>
           <input id={id} className="num" type="text" inputMode="decimal" autoComplete="off" enterKeyHint="done"
             value={draft} aria-invalid={err || undefined} aria-describedby={`${id}-hint`} data-testid="amount-input"

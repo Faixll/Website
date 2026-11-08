@@ -20,16 +20,18 @@ export const site = {
   /** TODO: the live domain (used for share links and SEO). */
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://example.ae',
 
-  /** Logo files in /public/brand (built by scripts/brand-albada.mjs from the client's round logo). */
+  /**
+   * The client's final logo (albada-final-logo.zip, see docs/BRAND-LOGO-README.txt). Rules: the full round logo
+   * is never shown smaller than 120px — below that the small version (Arabic name + cleaver) is used.
+   */
   logo: '/brand/albada-mark.svg',
   brand: {
-    /** Round badge with the name only — small sizes (phone header, favicon). */
+    /** Small version: header, product placeholders, 404 (favicon.svg from the pack). */
     mark: '/brand/albada-mark.svg',
-    /** Badge + name block for beige backgrounds (desktop header, 44px high). */
-    logo: '/brand/albada-logo.svg',
-    /** The full round logo (footer on black, share image, app icon). */
-    logoLight: '/brand/albada-logo-round.svg',
+    /** Full round logo, master (footer at 128px, anywhere ≥ 120px). */
     round: '/brand/albada-logo-round.svg',
+    /** Beige version, only for black or photo backgrounds. */
+    roundInverted: '/brand/albada-logo-round-inverted.svg',
   },
 
   /* ---------------- contact (TODO: all placeholders) ---------------- */

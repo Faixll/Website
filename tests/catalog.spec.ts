@@ -37,7 +37,7 @@ for (const lang of ['ar', 'en'] as const) {
         // Cart lines match the options added, and the drawer subtotal equals their offer prices.
         const lines = await cartSubtotal(page);
         expect(lines.map((l) => l.sizeId).sort()).toEqual(p.sizes.map((s) => s.id).sort());
-        await page.getByTestId('open-cart').click();
+        await page.locator('[data-testid="tab-cart"]').filter({ visible: true }).first().click();
         await expect(page.getByTestId('cart-subtotal')).toHaveText(fmt(expected, lang));
       });
     }
@@ -104,7 +104,7 @@ test('cart line shows the chosen options (e.g. "Local Hawar Meat - Boneless - 2 
   await page.getByTestId('amount-input').blur();
   await page.locator('button[role="radio"][data-cut="mandi"]').click();
   await page.locator('.desktop-add [data-testid="add-to-cart"]').click();
-  await page.getByTestId('open-cart').click();
+  await page.locator('[data-testid="tab-cart"]').filter({ visible: true }).first().click();
   await expect(page.getByTestId('cart-line-label').first()).toHaveText('Boneless - 2 kg - Mandi cut');
   await expect(page.getByTestId('cart-line-total').first()).toHaveText('AED 138.00');
 });

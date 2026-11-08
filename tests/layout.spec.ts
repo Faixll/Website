@@ -29,20 +29,36 @@ test.describe('P2: every piece rendered once (no search, no category chips)', ()
     expect(await visibleCount(page, '[data-testid="open-cart"], [data-testid="tab-cart"]')).toBe(1);
   });
 
-  test('desktop 1280: no tab bar, no side rail; header has cart, account, language; no search, no chips', async ({ page }) => {
+  test('desktop 1280: one round logo in the header; home / cart / profile in the side rail (on the start side); no search, no chips', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    for (const path of ['/ar', '/ar/product/hawar-local']) {
+    for (const [path, rtl] of [['/ar', true], ['/en', false], ['/ar/product/hawar-local', true]] as const) {
       await page.goto(path);
       await settle(page);
-      expect(await visibleCount(page, '[data-testid="tabbar"], .rail')).toBe(0);
       const header = page.locator('.site-header');
+      expect(await visibleCount(page, '.site-header .logo .mark'), path).toBe(1);
+      expect(await visibleCount(page, '.site-header .logo .name, .site-header .logo .wordmark'), path).toBe(0);
       expect(await visibleCount(page, 'input[type="search"]'), path).toBe(0);
-      await expect(header.getByTestId('open-cart')).toBeVisible();
-      await expect(header.getByTestId('header-account')).toBeVisible();
       await expect(header.getByTestId('lang-switch')).toBeVisible();
       expect(await visibleCount(page, '[data-testid="category-chips"], .chip-bar'), path).toBe(0);
-      expect(await visibleCount(page, '[data-testid="open-cart"], [data-testid="tab-cart"]')).toBe(1);
+      // The rail: vertical, on the start side (right in Arabic, left in English), and the page makes room for it.
+      const rail = await page.getByTestId('tabbar').boundingBox();
+      expect(rail, path).not.toBeNull();
+      expect(rail!.height, path).toBeGreaterThan(600);
+      expect(rail!.width, path).toBeLessThan(120);
+      if (rtl) expect(Math.round(rail!.x + rail!.width), path).toBe(1280);
+      else expect(Math.round(rail!.x), path).toBe(0);
+      const main = await page.locator('main').boundingBox();
+      if (rtl) expect(main!.x + main!.width, path).toBeLessThanOrEqual(rail!.x + 1);
+      else expect(main!.x, path).toBeGreaterThanOrEqual(rail!.width - 1);
+      // Each action once: cart and profile only in the rail.
+      expect(await visibleCount(page, '[data-testid="open-cart"], [data-testid="tab-cart"]'), path).toBe(1);
+      expect(await visibleCount(page, '[data-testid="header-account"]'), path).toBe(0);
+      await expect(page.getByTestId('tabbar').locator('[data-tab="profile"]')).toBeVisible();
     }
+    // Checkout stays calm: no rail there.
+    await page.goto('/ar/checkout');
+    await settle(page);
+    expect(await visibleCount(page, '[data-testid="tabbar"]')).toBe(0);
   });
 
   test('home shows all 10 products together in one grid, with no category titles', async ({ page }) => {

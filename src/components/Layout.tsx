@@ -5,16 +5,18 @@ import { phoneDisplay, waLink } from '@/lib/format';
 import { getDict } from '@/lib/i18n';
 import { Icon, type IconName } from './Icon';
 
-/** Thin black ticker that scrolls away with the page. Rotates the real messages; pauses on hover/touch; under
- *  reduced motion it is static and shows only the first message. */
+/** Black announcement bar: one message at a time, the next one every 3 seconds (pauses on hover/touch).
+ *  Under reduced motion it is static and shows only the first message. */
 export function Ticker({ lang }: { lang: Lang }) {
   const t = getDict(lang);
   const icons: IconName[] = ['truck', 'seal', 'snow'];
   return (
     <div className="ticker" data-testid="announcement" role="region" aria-label={t.ticker[0]}>
-      <div className="ticker-track">
+      <div className="ticker-track" style={{ ['--ticker-total' as string]: `${t.ticker.length * 3}s` }}>
         {t.ticker.map((m, i) => (
-          <span key={m} className="ticker-item" aria-hidden={i > 0 || undefined}><Icon name={icons[i]} size={16} />{m}</span>
+          <span key={m} className="ticker-item" aria-hidden={i > 0 || undefined} style={{ ['--ticker-delay' as string]: `${i * 3}s` }}>
+            <Icon name={icons[i]} size={22} />{m}
+          </span>
         ))}
       </div>
     </div>
@@ -37,7 +39,7 @@ export function Footer({ lang }: { lang: Lang }) {
       <div className="container">
         <div className="cols">
           <div className="stack">
-            <img className="f-logo" src={site.brand.logoLight} alt={site.name[lang]} width={96} height={96} loading="lazy" />
+            <img className="f-logo" src={site.brand.round} alt={site.name[lang]} width={128} height={128} loading="lazy" />
             <p style={{ opacity: 0.85 }}>{t.heroSub}</p>
             <div>
               <h2 style={{ marginTop: 8, fontSize: 16 }}>{t.paymentMethods}</h2>

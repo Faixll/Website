@@ -96,7 +96,7 @@ export function flyToCart(from: HTMLElement | null) {
   ).onfinish = () => fly.remove();
 }
 
-/* ---------------------------------------------------------------- tab bar (phone only) */
+/* ---------------------------------------------------------------- tab bar: bottom on phones, side rail on computers */
 type TabId = 'home' | 'cart' | 'profile';
 const TABS: { id: TabId; icon: IconName; label: 'tabHome' | 'tabSearch' | 'tabCart' | 'tabProfile' }[] = [
   { id: 'home', icon: 'home', label: 'tabHome' },
@@ -106,13 +106,15 @@ const TABS: { id: TabId; icon: IconName; label: 'tabHome' | 'tabSearch' | 'tabCa
 
 /** Product pages and checkout use their own sticky bars instead of the tab bar. */
 const noTabBar = (path: string) => /\/(product|checkout)(\/|$)/.test(path);
+/** Computers: the side rail shows everywhere except checkout (a calm, focused page). */
+const noRail = (path: string) => /\/checkout(\/|$)/.test(path);
 
 export function TabBar() {
   const { t, lang, cartOpen, setCartOpen } = useStore();
   const path = usePathname() ?? '';
   const typing = useTyping();
   const phone = useMedia('(max-width: 767px)');
-  const hidden = noTabBar(path) || (typing && phone);
+  const hidden = phone ? noTabBar(path) || typing : noRail(path);
 
   useEffect(() => {
     document.body.classList.toggle('hide-tabbar', hidden);

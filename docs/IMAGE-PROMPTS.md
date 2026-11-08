@@ -112,11 +112,12 @@ This script only makes real photos and AI images consistent (crop, brightness ra
 
 ## 5. THE LOGO
 The logo is already made, in the folder `logo/`:
-- `albada-logo-round.svg` — the client's round logo (red circle, beige ring, "البدع", a rule with a small cleaver, "ALBADA", the tagline). Footer, app icon, share image.
-- `albada-mark.svg` — the same badge with only "البدع", readable down to favicon size (phone header, favicon).
-- `albada-logo.svg` — badge + name block for beige backgrounds (desktop header).
+The final logo files come from the client (albada-final-logo.zip); their rules are in `docs/BRAND-LOGO-README.txt`.
+- `albada-logo-round.svg` — master round logo (footer, anywhere 120px or larger).
+- `albada-logo-round-inverted.svg` — beige version for black or photo backgrounds only.
+- `albada-mark.svg` — the small version (Arabic name + cleaver) for the header, placeholders and the favicon.
 
-How it was made: `node scripts/brand-albada.mjs`. The letters are the exact outlines of the original lettering ("البدع" in Lalezar, "ALBADA" in Playfair Display, the tagline in IBM Plex Sans Arabic), taken word by word from the first logo pack, so no font is needed and the Arabic stays correctly joined. Colors: red #A51D26, beige #F4ECDF, black #141110.
+Colors: red #A51D26, beige #F4ECDF, black #141110.
 This is a clean first version. If the client wants a different mark (for example a camel silhouette), give these files to a designer as the layout and spacing base. Do not use an AI image tool to write the Arabic name.
 
 ## 6. IF YOU TAKE REAL PHOTOS (best option)

@@ -36,6 +36,7 @@ const ar = {
   // hero
   heroTitle: 'لحوم طازجة وذبائح يومية، توصل لبابك',
   ourSpecialty: 'تميّزنا',
+  ourProducts: 'منتجاتنا',
   notFoundTitle: 'الصفحة غير موجودة',
   notFoundText: 'ربما تغيّر الرابط أو انتهى العرض. منتجاتنا كلها في الصفحة الرئيسية.',
   kgUnit: 'كغ',
@@ -419,6 +420,7 @@ const en: Dict = {
 
   heroTitle: 'Fresh meat and daily livestock, delivered to your door',
   ourSpecialty: 'Our specialty',
+  ourProducts: 'Our products',
   notFoundTitle: 'Page not found',
   notFoundText: 'The link may have changed or the offer has ended. All our products are on the home page.',
   kgUnit: 'kg',

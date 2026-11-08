@@ -71,7 +71,10 @@ export default async function Home({ params }: { params: Promise<{ lang: Lang }>
         <Hero />
 
         <section id="products" className="container section" aria-labelledby="products-title">
-          <h2 id="products-title" className="sr-only">{t.allProducts}</h2>
+          <div className="section-head">
+            <SectionTitle id="products-title">{t.ourProducts}</SectionTitle>
+            <span className="muted small num">{t.nResults(products.length)}</span>
+          </div>
           <div className="grid grid-all" data-testid="product-grid">
             {products.map((p, i) => <Reveal key={p.id} index={i}><ProductCard p={p} priority={i < 2} /></Reveal>)}
           </div>
