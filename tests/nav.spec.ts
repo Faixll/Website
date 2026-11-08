@@ -1,4 +1,4 @@
-/** Phone navigation: tab bar, search, profile → checkout prefill. */
+/** Phone navigation: tab bar (Home, Cart, Profile — search was removed), profile → checkout prefill. */
 import { expect, test } from '@playwright/test';
 import { settle, VIEWPORTS } from './helpers';
 
@@ -6,18 +6,19 @@ test.use({ viewport: VIEWPORTS.phone });
 
 const tabs = (page: import('@playwright/test').Page) => page.getByTestId('tabbar').locator('.tab');
 
-test('tab bar shows exactly 4 tabs on home, search, cart and profile', async ({ page }) => {
-  for (const path of ['/ar', '/ar/search', '/ar/profile']) {
+test('tab bar shows exactly 3 tabs (home, cart, profile) — no search', async ({ page }) => {
+  for (const path of ['/ar', '/ar/profile']) {
     await page.goto(path);
     await settle(page);
     await expect(page.getByTestId('tabbar'), path).toBeVisible();
-    await expect(tabs(page), path).toHaveCount(4);
+    await expect(tabs(page), path).toHaveCount(3);
+    await expect(page.getByTestId('tabbar').locator('[data-tab="search"]')).toHaveCount(0);
   }
   await page.goto('/ar');
   await settle(page);
   await page.getByTestId('tabbar').locator('[data-tab="cart"]').click();
   await expect(page.getByRole('dialog')).toBeVisible();
-  await expect(tabs(page)).toHaveCount(4);
+  await expect(tabs(page)).toHaveCount(3);
   await expect(page.getByTestId('tabbar').locator('[data-tab="cart"]')).toHaveAttribute('aria-current', 'page');
 });
 
@@ -44,7 +45,7 @@ test('in Arabic, Home is the rightmost tab (from the layout direction); in Engli
 });
 
 test('the active tab is marked with aria-current="page"', async ({ page }) => {
-  for (const [path, tab] of [['/ar', 'home'], ['/ar/search', 'search'], ['/ar/profile', 'profile']]) {
+  for (const [path, tab] of [['/ar', 'home'], ['/ar/profile', 'profile']]) {
     await page.goto(path);
     await settle(page);
     await expect(page.getByTestId('tabbar').locator(`[data-tab="${tab}"]`), path).toHaveAttribute('aria-current', 'page');
@@ -62,30 +63,12 @@ test('cart count bubble updates after adding a product', async ({ page }) => {
   await expect(page.getByTestId('tabbar').getByTestId('cart-count')).toHaveText('2');
 });
 
-test('search: "نعيمي", "نعيمى" and "naimi" find Naimi; "حوار" finds the Hawar products', async ({ page }) => {
-  for (const [lang, q] of [['ar', 'نعيمي'], ['ar', 'نعيمى'], ['en', 'naimi'], ['en', 'NAIMI']] as const) {
-    await page.goto(`/${lang}/search`);
-    await settle(page);
-    await page.getByTestId('search-input').fill(q);
-    await expect(page.locator('[data-product="naimi-local"]'), q).toBeVisible();
-  }
-  await page.goto('/ar/search');
+test('search was removed: no search box anywhere, and old /search links land on the product grid', async ({ page }) => {
+  await page.goto('/ar/search?cat=sheep');
+  await expect(page).toHaveURL((u) => u.pathname === '/ar' || u.pathname === '/ar/');
   await settle(page);
-  await page.getByTestId('search-input').fill('حوار');
-  await expect(page.locator('[data-product="hawar-local"]')).toBeVisible();
-  await expect(page.locator('[data-product="burger-hawar"]')).toBeVisible();
-  await page.getByTestId('search-input').fill('xyzxyz');
-  await expect(page.getByTestId('no-results')).toBeVisible();
-  await expect(page.getByTestId('no-results').getByRole('link')).toHaveAttribute('href', /wa\.me/);
-});
-
-test('Search tab opens /search with the input focused (and hides the tab bar while typing)', async ({ page }) => {
-  await page.goto('/ar');
-  await settle(page);
-  await page.getByTestId('tabbar').locator('[data-tab="search"]').click();
-  await expect(page).toHaveURL(/\/ar\/search/);
-  await expect(page.getByTestId('search-input')).toBeFocused();
-  await expect(page.getByTestId('tabbar')).toBeHidden();
+  await expect(page.locator('input[type="search"]')).toHaveCount(0);
+  await expect(page.getByTestId('product-grid').locator('[data-testid="product-card"]')).toHaveCount(10);
 });
 
 test('Profile saves delivery details on this device and checkout prefills them', async ({ page }) => {

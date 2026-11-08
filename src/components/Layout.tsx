@@ -1,7 +1,6 @@
 /* Server-rendered layout pieces: announcement ticker and footer. The header is in SiteHeader.tsx. */
 import Link from 'next/link';
 import { instagramUrl, site, type Lang } from '@/config/site';
-import { categories } from '@/data/catalog';
 import { phoneDisplay, waLink } from '@/lib/format';
 import { getDict } from '@/lib/i18n';
 import { Icon, type IconName } from './Icon';
@@ -45,14 +44,6 @@ export function Footer({ lang }: { lang: Lang }) {
               <PayIcons />
             </div>
           </div>
-          <nav aria-label={t.categories}>
-            <h2>{t.categories}</h2>
-            <ul data-testid="footer-categories">
-              {categories.map((c) => (
-                <li key={c.id}><Link href={`/${lang}/search?cat=${c.id}`}>{c.name[lang]}</Link></li>
-              ))}
-            </ul>
-          </nav>
           <div>
             <h2>{t.contactUs}</h2>
             <ul>

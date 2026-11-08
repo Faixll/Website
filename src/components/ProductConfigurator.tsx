@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useId, useState } from 'react';
 import { site } from '@/config/site';
-import { allowedCuts, cuts, QUICK_KG, qtyRule, wasPrice, type CutId, type Product } from '@/data/catalog';
+import { allowedCuts, cuts, qtyRule, wasPrice, type CutId, type Product } from '@/data/catalog';
 import { money, normaliseUaeMobile } from '@/lib/format';
 import { round2, unitPrice } from '@/lib/pricing';
 import { firstSlot, slotDays, type SlotDay } from '@/lib/uae-time';
@@ -164,14 +164,9 @@ export function ProductConfigurator({ p }: { p: Product }) {
           <fieldset className="opt-group">
             <legend>{t.amount}</legend>
             <div className="amount">
-              <Stepper value={qty} onChange={setQty} min={rule.min} max={rule.max} step={rule.step} format={fmtAmount} label={p.name[lang]} />
-              {p.byWeight && (
-                <div className="options-row" role="group" aria-label={t.amount}>
-                  {QUICK_KG.map((k) => (
-                    <Button key={k} variant="option" className="num" aria-pressed={qty === k} selected={qty === k} onClick={() => setQty(k)}>{t.kgN(k)}</Button>
-                  ))}
-                </div>
-              )}
+              <Stepper value={qty} onChange={setQty} min={rule.min} max={rule.max} step={rule.step} precision={rule.precision} format={fmtAmount} label={p.name[lang]}
+                editable={p.byWeight} unit={p.byWeight ? t.kgUnit : undefined} />
+              {p.byWeight && <p className="hint">{t.typeAmount(rule.min, rule.max)}</p>}
             </div>
           </fieldset>
 

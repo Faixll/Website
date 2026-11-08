@@ -7,8 +7,10 @@ import { CartDrawer, MiniCart, TabBar, Toast, WhatsAppFab } from '@/components/C
 import { FeaturesProvider } from '@/components/Features';
 import { Footer, Ticker } from '@/components/Layout';
 import { MotionProvider } from '@/components/Motion';
+import { Analytics } from '@/components/Analytics';
 import { StoreProvider } from '@/components/StoreProvider';
 import { getDict, isLang } from '@/lib/i18n';
+import { alternates } from '@/lib/seo';
 import { getFeatures } from '@/lib/server/features';
 import '../globals.css';
 
@@ -34,7 +36,12 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
     metadataBase: new URL(site.url),
     title: { default: `${site.name[lang]} | ${t.heroTitle}`, template: `%s | ${site.shortName[lang]}` },
     description: t.heroSub,
-    alternates: { languages: { ar: '/ar', en: '/en' } },
+    alternates: alternates(lang),
+    manifest: '/manifest.webmanifest',
+    icons: { icon: [{ url: '/favicon.ico', sizes: '48x48' }, { url: '/icon.svg', type: 'image/svg+xml' }], apple: '/apple-icon.png' },
+    applicationName: site.shortName[lang],
+    appleWebApp: { capable: true, title: site.shortName[lang], statusBarStyle: 'default' },
+    openGraph: { type: 'website', siteName: site.name[lang], locale: lang === 'ar' ? 'ar_AE' : 'en_AE', url: `/${lang}` },
   };
 }
 
@@ -62,6 +69,7 @@ export default async function RootLayout({ children, params }: { children: React
               <TabBar />
               <CartDrawer />
               <Toast />
+              <Analytics />
             </MotionProvider>
           </AccountProvider>
         </StoreProvider>

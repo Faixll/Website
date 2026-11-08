@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { LANGS, site, type Lang } from '@/config/site';
-import { categoryName, productById, products } from '@/data/catalog';
+import { productById, products } from '@/data/catalog';
 import { Reveal, SectionTitle } from '@/components/Motion';
 import { ProductReviews } from '@/components/ProductReviews';
 import { ProductCard } from '@/components/ProductCard';
@@ -10,6 +10,7 @@ import { ProductConfigurator } from '@/components/ProductConfigurator';
 import { ProductImage } from '@/components/ProductImage';
 import { SiteHeader } from '@/components/SiteHeader';
 import { getDict } from '@/lib/i18n';
+import { alternates } from '@/lib/seo';
 import { getReviews } from '@/lib/reviews';
 import { fromPrice } from '@/lib/search';
 
@@ -29,7 +30,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   return {
     title: p.name[lang],
     description: p.desc[lang],
-    alternates: { languages: { ar: `/ar/product/${id}`, en: `/en/product/${id}` } },
+    alternates: alternates(lang, `/product/${id}`),
     ...(p.image ? { openGraph: { images: [p.image.src] } } : {}),
   };
 }
@@ -59,12 +60,10 @@ export default async function ProductPage({ params }: { params: Params }) {
 
   return (
     <>
-      <SiteHeader activeCat={p.category} chips />
+      <SiteHeader />
       <main id="main" className="container">
         <nav className="breadcrumb" aria-label="breadcrumb">
           <Link href={`/${lang}`}>{t.home}</Link>
-          <span aria-hidden>/</span>
-          <Link href={`/${lang}/search?cat=${p.category}`}>{categoryName(p.category, lang)}</Link>
           <span aria-hidden>/</span>
           <span aria-current="page">{p.name[lang]}</span>
         </nav>

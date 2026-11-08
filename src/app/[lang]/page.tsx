@@ -1,71 +1,81 @@
 import type { Lang } from '@/config/site';
-import { categories, products } from '@/data/catalog';
+import { site } from '@/config/site';
+import { products } from '@/data/catalog';
 import { branches } from '@/data/places';
 import { BranchCard } from '@/components/BranchCard';
 import { ButtonLink } from '@/components/Button';
-import { CategoryChips } from '@/components/Chips';
-import { Hero, TrustRow } from '@/components/HomeParts';
+import { Hero } from '@/components/HomeParts';
+import { HomeReviews } from '@/components/HomeReviews';
 import { Reveal, SectionTitle } from '@/components/Motion';
 import { ProductCard } from '@/components/ProductCard';
-import { HomeReviews } from '@/components/HomeReviews';
 import { RewardsBand } from '@/components/RewardsBand';
 import { SiteHeader } from '@/components/SiteHeader';
 import { getDict } from '@/lib/i18n';
 import { getReviews } from '@/lib/reviews';
-import { heroVideoReady } from '@/lib/server/hero';
+import { fromPrice } from '@/lib/search';
 
-/**
- * Home, one job per screen: ticker (layout) → header → live hero → delivery card → trust row → category chips
- * → "Most ordered" red band (only products not repeated below) → one section per category → rewards band (flag)
- * → reviews → branch teaser → footer (layout).
- */
 /** Approved reviews appear within 5 minutes. */
 export const revalidate = 300;
 
+/**
+ * Home: ticker (layout) → header → red hero (headline, delivery time, our specialties) → ALL products in one
+ * grid (no category titles) → rewards band (only when switched on) → reviews → branches → footer (layout).
+ */
 export default async function Home({ params }: { params: Promise<{ lang: Lang }> }) {
   const { lang } = await params;
   const t = getDict(lang);
-  const sections = categories.map((c) => ({ c, items: products.filter((p) => p.category === c.id) })).filter((s) => s.items.length);
-  // No product appears twice: "Most ordered" only takes popular products not listed in a category section below.
-  const inSections = new Set(sections.flatMap((s) => s.items.map((p) => p.id)));
-  const mostOrdered = products.filter((p) => p.popular && !inSections.has(p.id));
   const reviews = await getReviews();
+
+  // Structured data: the product list with prices, so search engines can show them.
+  const itemList = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: products.map((p, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      url: `${site.url}/${lang}/product/${p.id}`,
+      name: p.name[lang],
+      item: {
+        '@type': 'Product',
+        name: p.name[lang],
+        url: `${site.url}/${lang}/product/${p.id}`,
+        offers: { '@type': 'Offer', priceCurrency: 'AED', price: fromPrice(p).toFixed(2), availability: p.stock === 'out' ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock' },
+      },
+    })),
+  };
+
+  // The business itself. Phone/e-mail are added only once the real ones replace the TODO placeholders in site.ts.
+  const real = (v: string) => !/0000000|example/.test(v);
+  const org = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: site.name[lang],
+    alternateName: site.name[lang === 'ar' ? 'en' : 'ar'],
+    url: `${site.url}/${lang}`,
+    logo: `${site.url}/icons/icon-512.png`,
+    ...(real(site.phone) ? { telephone: site.phone } : {}),
+    ...(real(site.email) ? { email: site.email } : {}),
+    department: branches.map((b) => ({
+      '@type': 'Store',
+      name: `${site.name[lang]} — ${b.name[lang]}`,
+      address: { '@type': 'PostalAddress', streetAddress: b.address[lang], addressLocality: lang === 'ar' ? 'العين' : 'Al Ain', addressCountry: 'AE' },
+      geo: { '@type': 'GeoCoordinates', latitude: b.lat, longitude: b.lng },
+      ...(real(b.phone) ? { telephone: b.phone } : {}),
+    })),
+  };
 
   return (
     <>
       <SiteHeader />
       <main id="main">
-        <Hero hasVideo={heroVideoReady()} />
+        <Hero />
 
-        <section className="container" style={{ paddingBlock: 'var(--s5)' }} aria-label={t.trust3.map((x) => x[0]).join('، ')}>
-          <TrustRow />
+        <section id="products" className="container section" aria-labelledby="products-title">
+          <h2 id="products-title" className="sr-only">{t.allProducts}</h2>
+          <div className="grid grid-all" data-testid="product-grid">
+            {products.map((p, i) => <Reveal key={p.id} index={i}><ProductCard p={p} priority={i < 2} /></Reveal>)}
+          </div>
         </section>
-
-        {/* Direct child of <main> so it can stay stuck under the header for the whole page. */}
-        <CategoryChips mode="scroll" sticky />
-
-        {mostOrdered.length > 0 && (
-          <section className="band-red section" aria-labelledby="most-ordered">
-            <div className="container">
-              <div className="section-head"><SectionTitle id="most-ordered">{t.mostOrdered}</SectionTitle></div>
-              <div className="hscroll row">
-                {mostOrdered.map((p, i) => <Reveal key={p.id} index={i}><ProductCard p={p} /></Reveal>)}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {sections.map(({ c, items }, si) => (
-          <section key={c.id} id={`cat-${c.id}`} className="container section" style={si > 0 ? { paddingTop: 0 } : undefined} aria-labelledby={`h-${c.id}`}>
-            <div className="section-head">
-              <SectionTitle id={`h-${c.id}`}>{c.name[lang]}</SectionTitle>
-              <ButtonLink href={`/${lang}/search?cat=${c.id}`} variant="ghost">{t.seeAllCat}</ButtonLink>
-            </div>
-            <div className="grid">
-              {items.map((p, i) => <Reveal key={p.id} index={i}><ProductCard p={p} priority={si === 0 && i < 2} /></Reveal>)}
-            </div>
-          </section>
-        ))}
 
         <RewardsBand />
 
@@ -84,6 +94,7 @@ export default async function Home({ params }: { params: Promise<{ lang: Lang }>
             </div>
           </div>
         </section>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([org, itemList]) }} />
       </main>
     </>
   );

@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import type { Lang } from '@/config/site';
 import { getDict } from '@/lib/i18n';
+import { alternates } from '@/lib/seo';
 import { LegalPage } from '../LegalPage';
 
 // TODO (business): replace the placeholder with the real text.
 export async function generateMetadata({ params }: { params: Promise<{ lang: Lang }> }): Promise<Metadata> {
   const { lang } = await params;
-  return { title: getDict(lang).privacy };
+  return { title: getDict(lang).privacy, alternates: alternates(lang, '/privacy') };
 }
 
 export default async function Page({ params }: { params: Promise<{ lang: Lang }> }) {

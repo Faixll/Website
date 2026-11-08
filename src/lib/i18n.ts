@@ -35,6 +35,12 @@ const ar = {
 
   // hero
   heroTitle: 'لحوم طازجة وذبائح يومية، توصل لبابك',
+  ourSpecialty: 'تميّزنا',
+  notFoundTitle: 'الصفحة غير موجودة',
+  notFoundText: 'ربما تغيّر الرابط أو انتهى العرض. منتجاتنا كلها في الصفحة الرئيسية.',
+  kgUnit: 'كغ',
+  typeAmount: (min: number, max: number) => `اكتب الكمية بالكيلو (من ${min} إلى ${max} كغ)`,
+  popular: 'الأكثر طلباً',
   orderNow: 'اطلب الآن',
   ticker: ['توصيل في نفس اليوم للطلبات قبل الساعة 7 مساءً', 'ذبح حلال يومي', 'توصيل مبرد 0–4°م'],
   reviewsHome: 'ماذا يقول عملاؤنا',
@@ -412,6 +418,12 @@ const en: Dict = {
   language: 'Language',
 
   heroTitle: 'Fresh meat and daily livestock, delivered to your door',
+  ourSpecialty: 'Our specialty',
+  notFoundTitle: 'Page not found',
+  notFoundText: 'The link may have changed or the offer has ended. All our products are on the home page.',
+  kgUnit: 'kg',
+  typeAmount: (min: number, max: number) => `Type the amount in kg (${min} to ${max} kg)`,
+  popular: 'Most ordered',
   orderNow: 'Order now',
   ticker: ['Same-day delivery on orders before 7 PM', 'Daily halal slaughter', 'Chilled delivery 0–4°C'],
   reviewsHome: 'What our customers say',

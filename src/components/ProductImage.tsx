@@ -40,7 +40,7 @@ export function ProductImage({
   }
   return (
     <div className={`ph${large ? ' lg' : ''}${small ? ' sm' : ''}`} role="img" aria-label={alt}>
-      <img src={site.brand.mark} alt="" width={120} height={120} aria-hidden />
+      <span className="ph-mark" aria-hidden style={{ backgroundImage: `url(${site.brand.mark})` }} />
       {!small && <span aria-hidden>{p.name[lang]}</span>}
     </div>
   );

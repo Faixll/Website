@@ -18,7 +18,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ lang:
       <header className="header">
         <div className="container">
           <Link href={`/${lang}`} className="logo" aria-label={site.name[lang]}>
-            <img src={site.logo} alt="" width={40} height={40} />
+            <span className="mark" aria-hidden style={{ backgroundImage: `url(${site.brand.mark})` }} />
             <span className="name"><b>{site.shortName[lang]}</b></span>
           </Link>
           <p className="secure" style={{ marginInlineStart: 'auto' }}>{t.secure}</p>

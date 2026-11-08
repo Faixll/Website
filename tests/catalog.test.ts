@@ -1,7 +1,7 @@
 /** Checks the store's price list was entered exactly, and that the cart charges the offer price. */
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { allowedCuts, categories, discountPct, productById, products, qtyRule, validQty, wasPrice } from '../src/data/catalog';
+import { allowedCuts, categories, discountPct, productById, products, qtyRule, roundQty, validQty, wasPrice } from '../src/data/catalog';
 import { unitPrice } from '../src/lib/pricing';
 
 import source from '../data/products.json';
@@ -58,12 +58,20 @@ describe("store's price list", () => {
     for (const p of products) assert.equal(p.cuts.length > 0, p.unit === 'kg', p.id);
   });
 
-  it('kg amounts go in 0.5 steps from 0.5; packs in whole numbers from 1', () => {
+  it('kg: customers type any amount 0.5–50 kg to the nearest 0.1 kg; packs are whole numbers 1–20', () => {
     const kg = productById('naimi-local')!;
     const pack = productById('burger-meat')!;
-    assert.deepEqual(qtyRule(kg), { min: 0.5, step: 0.5, max: 50, def: 1 });
-    assert.ok(validQty(kg, 0.5) && validQty(kg, 2.5) && !validQty(kg, 0.25) && !validQty(kg, 0));
+    assert.deepEqual(qtyRule(kg), { min: 0.5, step: 0.5, precision: 0.1, max: 50, def: 1 });
+    assert.ok(validQty(kg, 0.5) && validQty(kg, 1.3) && validQty(kg, 2.5) && validQty(kg, 0.1 + 0.2 + 1) && validQty(kg, 50));
+    assert.ok(!validQty(kg, 0.4) && !validQty(kg, 1.25) && !validQty(kg, 0) && !validQty(kg, 50.1) && !validQty(kg, NaN));
+    assert.equal(roundQty(kg, 1.26), 1.3);
+    assert.equal(roundQty(kg, 1.3 + 0.5), 1.8);
     assert.ok(validQty(pack, 1) && validQty(pack, 3) && !validQty(pack, 1.5) && !validQty(pack, 0));
+  });
+
+  it('a typed kg amount is charged exactly (1.3 kg Naimi at 69 AED = 89.70 AED)', () => {
+    const kg = productById('naimi-local')!;
+    assert.equal(Math.round(unitPrice(kg, 'kg', allowedCuts(kg)[0]) * 1.3 * 100) / 100, 89.7);
   });
 
   it('lists categories in the store order, with no empty category', () => {

@@ -1,6 +1,6 @@
 /**
- * v3 layout checks: P2 (no duplicates), P3 (fixed space), P4 (live hero), P5 (visible on first paint),
- * P6 (WhatsApp button), P7 (compact trust row) and no sideways scrolling at every width.
+ * Layout checks: P2 (no duplicates, no search, no chips, one product grid), P3 (fixed space), P4 (hero without a
+ * picture), P5 (visible on first paint), P6 (WhatsApp button), P7 (compact trust row), no sideways scrolling.
  */
 import { expect, test, type Page } from '@playwright/test';
 import { settle } from './helpers';
@@ -11,38 +11,53 @@ const visibleCount = (page: Page, sel: string) =>
     return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && cs.display !== 'none';
   }).length, sel);
 
-test.describe('P2: every piece rendered once', () => {
-  test('phone 390: header = logo + language only; search and cart live in the tab bar; one category selector', async ({ page }) => {
+test.describe('P2: every piece rendered once (no search, no category chips)', () => {
+  test('phone 390: header = logo + language; cart lives in the tab bar; no search box, no chips', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/ar');
     await settle(page);
     const header = page.locator('.site-header');
-    expect(await visibleCount(page, '.site-header input[type="search"]')).toBe(0);
+    expect(await visibleCount(page, 'input[type="search"]')).toBe(0);
     expect(await visibleCount(page, '.site-header [data-testid="open-cart"]')).toBe(0);
     expect(await visibleCount(page, '.site-header [data-testid="header-account"]')).toBe(0);
     await expect(header.getByTestId('lang-switch')).toBeVisible();
     await expect(header.locator('.logo')).toBeVisible();
-    expect(await visibleCount(page, '[data-testid="category-chips"]')).toBe(1);
-    expect(await visibleCount(page, '.cat-strip, .rail')).toBe(0);
+    expect(await visibleCount(page, '[data-testid="category-chips"], .chip-bar, .cat-strip, .rail')).toBe(0);
     const tabbar = page.getByTestId('tabbar');
-    await expect(tabbar.locator('[data-tab="search"]')).toBeVisible();
     await expect(tabbar.locator('[data-tab="cart"]')).toBeVisible();
+    await expect(tabbar.locator('[data-tab="search"]')).toHaveCount(0);
     expect(await visibleCount(page, '[data-testid="open-cart"], [data-testid="tab-cart"]')).toBe(1);
   });
 
-  test('desktop 1280: no tab bar, no side rail; header has search, cart, account, language; chips once', async ({ page }) => {
+  test('desktop 1280: no tab bar, no side rail; header has cart, account, language; no search, no chips', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     for (const path of ['/ar', '/ar/product/hawar-local']) {
       await page.goto(path);
       await settle(page);
       expect(await visibleCount(page, '[data-testid="tabbar"], .rail')).toBe(0);
       const header = page.locator('.site-header');
-      await expect(header.locator('input[type="search"]')).toBeVisible();
+      expect(await visibleCount(page, 'input[type="search"]'), path).toBe(0);
       await expect(header.getByTestId('open-cart')).toBeVisible();
       await expect(header.getByTestId('header-account')).toBeVisible();
       await expect(header.getByTestId('lang-switch')).toBeVisible();
-      expect(await visibleCount(page, '[data-testid="category-chips"]'), path).toBe(1);
+      expect(await visibleCount(page, '[data-testid="category-chips"], .chip-bar'), path).toBe(0);
       expect(await visibleCount(page, '[data-testid="open-cart"], [data-testid="tab-cart"]')).toBe(1);
+    }
+  });
+
+  test('home shows all 10 products together in one grid, with no category titles', async ({ page }) => {
+    for (const [w, cols] of [[390, 2], [768, 2], [1280, 5]] as const) {
+      await page.setViewportSize({ width: w, height: 900 });
+      await page.goto('/ar');
+      await settle(page);
+      const grid = page.getByTestId('product-grid');
+      await expect(grid.locator('[data-testid="product-card"]')).toHaveCount(10);
+      expect(await page.locator('main h2:not(.sr-only)').evaluateAll((hs) => hs.map((h) => h.textContent).filter((t) => /حوار|خروف|تيس|عجل|برجر|وجبات/.test(t ?? ''))), `${w}`).toEqual([]);
+      // Every row is full: the number of columns divides 10.
+      const tops = await grid.locator(':scope > *').evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
+      const perRow = tops.filter((t) => t === tops[0]).length;
+      expect(perRow, `${w}`).toBe(cols);
+      expect(10 % perRow, `${w}`).toBe(0);
     }
   });
 });
@@ -50,45 +65,36 @@ test.describe('P2: every piece rendered once', () => {
 test.describe('P3: fixed space on phone', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test('56px header; the ticker scrolls away; chip bar ≤64px, sticky under the header; on the way down the header slides away and the chips stay at the top', async ({ page }) => {
+  test('56px header that keeps its height; the ticker scrolls away; the header slides away going down and returns going up', async ({ page }) => {
     await page.goto('/ar');
     await settle(page);
-    expect(Math.round((await page.locator('.site-header').boundingBox())!.height)).toBe(56);
-    const bar = page.locator('.chip-bar');
-    expect((await bar.boundingBox())!.height).toBeLessThanOrEqual(64);
-
-    // Scroll past the chips: the ticker is gone and the bar sticks directly under the header.
-    const barTop = await bar.evaluate((e) => e.getBoundingClientRect().top + window.scrollY);
-    await page.evaluate((y) => window.scrollTo(0, y), barTop + 800);
-    await page.mouse.wheel(0, -300); // a little upward scroll brings the bar back
-    await page.waitForTimeout(500);
+    const header = page.locator('.site-header');
+    expect(Math.round((await header.boundingBox())!.height)).toBe(56);
+    await page.evaluate(() => window.scrollTo(0, 1500));
+    await page.mouse.move(195, 420);
+    for (let i = 0; i < 4; i++) { await page.mouse.wheel(0, 400); await page.waitForTimeout(80); }
+    await page.waitForTimeout(400);
     const tick = await page.getByTestId('announcement').boundingBox();
     expect(tick === null || tick.y + tick.height <= 0).toBe(true);
-    const headerBottom = await page.locator('.site-header').evaluate((e) => e.getBoundingClientRect().bottom);
-    expect(Math.abs((await bar.evaluate((e) => e.getBoundingClientRect().top)) - headerBottom)).toBeLessThanOrEqual(2);
-    await expect(page.locator('.site-header')).not.toHaveClass(/\bhide\b/);
-
-    // Down: header away, chip row stays visible at the very top (only 64px of sticky chrome).
-    for (let i = 0; i < 4; i++) { await page.mouse.wheel(0, 500); await page.waitForTimeout(80); }
-    await page.waitForTimeout(400);
-    await expect(page.locator('.site-header')).toHaveClass(/\bhide\b/);
-    expect(Math.round(await bar.evaluate((e) => e.getBoundingClientRect().top))).toBe(0);
-    expect(Math.round(await bar.evaluate((e) => e.getBoundingClientRect().bottom))).toBeLessThanOrEqual(64);
-    // Up: header back, chips directly under it.
+    await expect(header).toHaveClass(/\bhide\b/);
+    expect(Math.round(await header.evaluate((e) => e.getBoundingClientRect().bottom))).toBeLessThanOrEqual(0);
+    expect(Math.round(await header.evaluate((e) => e.getBoundingClientRect().height))).toBe(56);
     for (let i = 0; i < 2; i++) { await page.mouse.wheel(0, -300); await page.waitForTimeout(80); }
     await page.waitForTimeout(400);
-    await expect(page.locator('.site-header')).not.toHaveClass(/\bhide\b/);
-    expect(Math.round(await bar.evaluate((e) => e.getBoundingClientRect().top))).toBe(56);
+    await expect(header).not.toHaveClass(/\bhide\b/);
+    expect(Math.round(await header.evaluate((e) => e.getBoundingClientRect().top))).toBe(0);
   });
 });
 
 test.describe('P4/P5: hero and first paint', () => {
-  test('hero shows media (video, or placeholder until the files exist) — never an empty box', async ({ page }) => {
+  test('the hero has no picture: headline, delivery-time card and our three specialties sit in the red band', async ({ page }) => {
     await page.goto('/ar');
     await settle(page);
-    const media = page.getByTestId('hero-media');
-    await expect(media).toBeVisible();
-    expect(await media.locator('video, picture, .hero-placeholder').count()).toBeGreaterThan(0);
+    const hero = page.getByTestId('hero');
+    await expect(hero.locator('h1')).toBeVisible();
+    await expect(hero.getByTestId('delivery-card')).toBeVisible();
+    await expect(hero.getByTestId('trust').locator(':scope > li')).toHaveCount(3);
+    expect(await hero.locator('img, video, picture, [data-testid="hero-media"], .hero-pill').count()).toBe(0);
   });
 
   test('without JavaScript every section and product card is fully visible (no opacity fade)', async ({ browser }) => {
@@ -126,9 +132,9 @@ test.describe('P6: WhatsApp button', () => {
     await page.waitForTimeout(100);
     await expect(fab).toHaveClass(/\baway\b/);
 
-    await page.goto('/ar/search');
+    await page.goto('/ar/profile');
     await settle(page);
-    await page.getByTestId('search-input').focus();
+    await page.locator('#pf-name').focus();
     await page.waitForTimeout(300);
     expect(await visibleCount(page, '[data-testid="whatsapp-fab"]:not(.away)')).toBe(0);
   });
@@ -166,10 +172,10 @@ test('P7: the trust items sit in one compact row of three', async ({ page }) => 
 });
 
 test('no sideways scrolling at 320, 360, 390, 430, 768, 1024 and 1280', async ({ page }) => {
-  test.setTimeout(300_000);
+  test.setTimeout(600_000);
   for (const width of [320, 360, 390, 430, 768, 1024, 1280]) {
     await page.setViewportSize({ width, height: 800 });
-    for (const path of ['/ar', '/en', '/ar/product/hawar-local', '/ar/search', '/ar/stores']) {
+    for (const path of ['/ar', '/en', '/ar/product/hawar-local', '/ar/stores', '/ar/no-such-page']) {
       await page.goto(path);
       await settle(page);
       const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);

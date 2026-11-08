@@ -175,13 +175,22 @@ export const discountPct = (s: Size) => (wasPrice(s) ? Math.round(((s.was! - s.p
 export const allowedCuts = (p: Product): CutId[] => (p.cuts.length ? p.cuts : ['asis']);
 
 /** Amount rules: kg products in 0.5 steps (0.5–50 kg), others in whole numbers (1–20). */
-export const qtyRule = (p: Product) => (p.byWeight ? { min: 0.5, step: 0.5, max: 50, def: 1 } : { min: 1, step: 1, max: 20, def: 1 });
+/**
+ * Amounts. kg products: the customer types any amount from 0.5 to 50 kg, to the nearest 0.1 kg
+ * (the − / + buttons move in 0.5 kg steps). Packs and meals: whole numbers 1–20.
+ */
+export const qtyRule = (p: Product) => (p.byWeight
+  ? { min: 0.5, step: 0.5, precision: 0.1, max: 50, def: 1 }
+  : { min: 1, step: 1, precision: 1, max: 20, def: 1 });
 export const validQty = (p: Product, q: number) => {
   const r = qtyRule(p);
-  return Number.isFinite(q) && q >= r.min && q <= r.max && Math.abs(q / r.step - Math.round(q / r.step)) < 1e-9;
+  return Number.isFinite(q) && q >= r.min && q <= r.max && Math.abs(q / r.precision - Math.round(q / r.precision)) < 1e-6;
 };
-/** Quick amount buttons for kg products. */
-export const QUICK_KG = [0.5, 1, 2, 5];
+/** Rounds a typed amount to the product's precision (avoids 1.2000000002). */
+export const roundQty = (p: Product, q: number) => {
+  const r = qtyRule(p);
+  return Math.round(Math.round(q / r.precision) * r.precision * 1000) / 1000;
+};
 
 export const unitLabel: Record<Unit, L10n> = {
   kg: { ar: 'كغ', en: 'kg' },

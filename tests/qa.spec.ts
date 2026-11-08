@@ -9,7 +9,6 @@ const PAGES = [
   { name: 'home-ar', path: '/ar' },
   { name: 'home-en', path: '/en' },
   { name: 'stores-ar', path: '/ar/stores' },
-  { name: 'search-ar', path: '/ar/search' },
   { name: 'product-ar', path: '/ar/product/hawar-local' },
   { name: 'cart-ar', path: '/ar', withItem: true, openCart: true },
   { name: 'checkout-ar', path: '/ar/checkout', withItem: true },
@@ -165,15 +164,12 @@ test('E: branches show today first, full week behind a toggle, and an Open in Ma
   await expect(page.locator('table tr').filter({ visible: true })).toHaveCount(7);
 });
 
-test('F: footer categories match the category chips', async ({ page }) => {
-  await page.goto('/ar');
-  await settle(page);
-  const cats = (sel: string) => page.evaluate((s) => Array.from(new Set(Array.from(document.querySelectorAll<HTMLAnchorElement>(s))
-    .map((a) => new URL(a.href).searchParams.get('cat')).filter(Boolean))).sort(), sel);
-  const header = await page.evaluate(() => Array.from(document.querySelectorAll<HTMLElement>('[data-testid="category-chips"] [data-cat]')).map((a) => a.dataset.cat!).sort());
-  const footer = await cats('footer a[href*="cat="]');
-  expect(header.length).toBeGreaterThan(0);
-  expect(footer).toEqual(header);
+test('F: no category strip or chips anywhere (all products are shown together)', async ({ page }) => {
+  for (const path of ['/ar', '/en', '/ar/product/hawar-local', '/ar/stores']) {
+    await page.goto(path);
+    await settle(page);
+    expect(await page.locator('[data-testid="category-chips"], .chip-bar, .cat-strip, [data-testid="footer-categories"]').count(), path).toBe(0);
+  }
 });
 
 test('H: English uses "Hawar Albada" everywhere', async ({ page }) => {

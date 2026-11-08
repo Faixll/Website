@@ -23,15 +23,6 @@ test.describe('reduced motion', () => {
   // Emulate prefers-reduced-motion before the page loads (the `reducedMotion` use-option is not applied by this runner).
   test.beforeEach(async ({ page }) => { await page.emulateMedia({ reducedMotion: 'reduce' }); });
 
-  test('no parallax on the hero photo', async ({ page }) => {
-    await page.goto('/ar');
-    await settle(page);
-    await page.mouse.wheel(0, 400);
-    await page.waitForTimeout(500);
-    const transform = await page.getByTestId('hero-media').evaluate((el) => getComputedStyle(el).transform);
-    expect(transform === 'none' || transform === 'matrix(1, 0, 0, 1, 0, 0)').toBe(true);
-  });
-
   test('no bounce or slide: add-to-cart and cart icon do not scale', async ({ page }) => {
     await page.goto('/ar');
     await settle(page);

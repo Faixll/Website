@@ -96,6 +96,12 @@ export const site = {
   },
 
   /**
+   * TODO(client): product ids that get the gold "Most ordered" badge, e.g. ['hawar-local', 'naimi-local'].
+   * Left empty on purpose: only the shop knows which products really sell most.
+   */
+  popularProducts: [] as string[],
+
+  /**
    * Loyalty points (Part B — shown only when REWARDS_ENABLED=true and a database + code sender are set up).
    * TODO(client): POINTS_PER_AED=1 and AED_PER_100_POINTS=5 are EXAMPLE values — the client must decide.
    * Set NEXT_PUBLIC_POINTS_PER_AED / NEXT_PUBLIC_AED_PER_100_POINTS at build time (read by server and browser).

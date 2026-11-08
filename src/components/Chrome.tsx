@@ -97,10 +97,9 @@ export function flyToCart(from: HTMLElement | null) {
 }
 
 /* ---------------------------------------------------------------- tab bar (phone only) */
-type TabId = 'home' | 'search' | 'cart' | 'profile';
+type TabId = 'home' | 'cart' | 'profile';
 const TABS: { id: TabId; icon: IconName; label: 'tabHome' | 'tabSearch' | 'tabCart' | 'tabProfile' }[] = [
   { id: 'home', icon: 'home', label: 'tabHome' },
-  { id: 'search', icon: 'search', label: 'tabSearch' },
   { id: 'cart', icon: 'cart', label: 'tabCart' },
   { id: 'profile', icon: 'user', label: 'tabProfile' },
 ];
@@ -122,7 +121,6 @@ export function TabBar() {
 
   const active: TabId | null = cartOpen ? 'cart'
     : new RegExp(`^/${lang}/?$`).test(path) ? 'home'
-    : /\/search/.test(path) ? 'search'
     : /\/profile/.test(path) ? 'profile' : null;
 
   return (
@@ -149,7 +147,7 @@ export function TabBar() {
             </button>
           );
         }
-        const href = tab.id === 'home' ? `/${lang}` : tab.id === 'search' ? `/${lang}/search?focus=1` : `/${lang}/profile`;
+        const href = tab.id === 'home' ? `/${lang}` : `/${lang}/profile`;
         return (
           <Link key={tab.id} href={href} className="tab" data-tab={tab.id} aria-current={isActive ? 'page' : undefined}>
             {inner}
@@ -259,7 +257,7 @@ export function CartDrawer() {
               <div className="empty">
                 <Icon name="cart" size={32} />
                 <p>{t.cartEmpty}</p>
-                <ButtonLink href={`/${lang}/search`} onClick={() => setCartOpen(false)}>{t.shopNow}</ButtonLink>
+                <ButtonLink href={`/${lang}#products`} onClick={() => setCartOpen(false)}>{t.shopNow}</ButtonLink>
               </div>
             ) : (
               <>
@@ -274,7 +272,7 @@ export function CartDrawer() {
                           <Link className="l-name" href={`/${lang}/product/${p.id}`} onClick={() => setCartOpen(false)}>{p.name[lang]}</Link>
                           <span className="l-opts" data-testid="cart-line-label">{lineLabel(l, lang, t, { withName: false }) || ' '}{l.notes ? ` · ${l.notes}` : ''}</span>
                           <div className="l-row">
-                            <Stepper value={l.qty} onChange={(q) => setQty(l.key, q)} min={r.min} max={r.max} step={r.step} small removable
+                            <Stepper value={l.qty} onChange={(q) => setQty(l.key, q)} min={r.min} max={r.max} step={r.step} precision={r.precision} small removable
                               format={(v) => amountLabel(p.id, v, t)} label={p.name[lang]} />
                             <b className="num" data-testid="cart-line-total">{money(linePrice(l), lang)}</b>
                           </div>

@@ -4,11 +4,12 @@ import { branches } from '@/data/places';
 import { SiteHeader } from '@/components/SiteHeader';
 import { BranchesWithMap, ContactForm, ContactTiles } from '@/components/StoresView';
 import { getDict } from '@/lib/i18n';
+import { alternates } from '@/lib/seo';
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: Lang }> }): Promise<Metadata> {
   const { lang } = await params;
   const t = getDict(lang);
-  return { title: t.storesTitle, description: t.storesSub, alternates: { languages: { ar: '/ar/stores', en: '/en/stores' } } };
+  return { title: t.storesTitle, description: t.storesSub, alternates: alternates(lang, '/stores') };
 }
 
 export default async function StoresPage({ params }: { params: Promise<{ lang: Lang }> }) {
@@ -26,7 +27,7 @@ export default async function StoresPage({ params }: { params: Promise<{ lang: L
 
   return (
     <>
-      <SiteHeader chips />
+      <SiteHeader />
       <main id="main" className="container">
         <div className="page-title">
           <h1>{t.storesTitle}</h1>

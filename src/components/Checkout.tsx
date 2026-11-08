@@ -5,14 +5,15 @@ import { loadStripe, type Stripe as StripeJs, type StripeExpressCheckoutElementC
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { site } from '@/config/site';
-import { productById } from '@/data/catalog';
+import { productById, type CutId } from '@/data/catalog';
+import { track } from '@/lib/analytics';
 import { lineLabel } from '@/lib/lines';
 import { ProductImage } from './ProductImage';
 import { branches, emirates } from '@/data/places';
 import { money } from '@/lib/format';
 import { fulfilmentOf, priceOrder, validateOrder, type FieldErrors, type OrderInput, type PaymentMethod, type PricedOrder } from '@/lib/order';
 import { maxBlocks, NO_REDEMPTION, pointsEarned, type Redemption } from '@/lib/points';
-import { linePrice, totals as calcTotals } from '@/lib/pricing';
+import { linePrice, totals as calcTotals, unitPrice } from '@/lib/pricing';
 import { useAccount } from './AccountProvider';
 import { BranchStatusLine } from './BranchCard';
 import { SlotPicker } from './HomeParts';
@@ -149,6 +150,9 @@ function CheckoutForm({ form, setForm, totals, priced, disc, setDisc, discError,
   const [serverError, setServerError] = useState('');
   const [walletOk, setWalletOk] = useState<boolean | null>(null);
 
+  // Ads/analytics: checkout started (once per visit to this page).
+  useEffect(() => { track({ name: 'begin_checkout', value: totals.total, items: analyticsItems(totals.lines) }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => ({ ...f, [k]: v }));
   const input = (): OrderInput => ({ ...form, lang, slot, lines: totals.lines });
 
@@ -194,6 +198,7 @@ function CheckoutForm({ form, setForm, totals, priced, disc, setDisc, discError,
   };
 
   const finish = (orderId: string, paid: boolean, pts = 0) => {
+    track({ name: 'purchase', orderId, value: totals.total, items: analyticsItems(totals.lines) });
     saveLastOrder(totals.lines);
     clear();
     setFulfilment(fulfilmentOf(form));
@@ -521,6 +526,14 @@ function DiscountsPanel({ totals, priced, disc, setDisc, discError, setDiscError
       {discError && <p className="error" id="co-disc-e" role="alert">{discError}</p>}
     </section>
   );
+}
+
+/** Cart lines in the shape the ad/analytics tags expect. */
+function analyticsItems(lines: { productId: string; sizeId: string; cutId: CutId; qty: number }[]) {
+  return lines.map((l) => {
+    const p = productById(l.productId)!;
+    return { id: p.id, name: p.name.en, price: unitPrice(p, l.sizeId, l.cutId), quantity: l.qty };
+  });
 }
 
 /* Stripe hooks throw outside <Elements>; when Stripe isn't configured we render without it. */

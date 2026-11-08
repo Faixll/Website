@@ -10,7 +10,7 @@ export function LegalPage({ lang, title }: { lang: Lang; title: string }) {
   const t = getDict(lang);
   return (
     <>
-      <SiteHeader chips />
+      <SiteHeader />
       <main id="main" className="container section" style={{ paddingTop: 'var(--s5)' }}>
         <article className="prose">
           <h1>{title}</h1>

@@ -7,7 +7,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { settle, VIEWPORTS } from './helpers';
 
-const PAGES = ['/ar', '/en', '/ar/search?cat=sheep', '/ar/product/hawar-local'];
+const PAGES = ['/ar', '/en', '/ar/stores', '/ar/product/hawar-local'];
 
 type Step = { y: number; h: number };
 
@@ -94,7 +94,7 @@ for (const [w, h] of WIDTHS) {
   }
 }
 
-test('P1 the chip bar never calls scrollIntoView while the user scrolls', async ({ page }) => {
+test('P1 nothing calls scrollIntoView while the user scrolls', async ({ page }) => {
   await page.addInitScript(() => {
     (window as unknown as { __siv: number }).__siv = 0;
     const original = Element.prototype.scrollIntoView;
@@ -113,22 +113,23 @@ test('P1 the chip bar never calls scrollIntoView while the user scrolls', async 
   expect(await page.evaluate(() => (window as unknown as { __siv: number }).__siv)).toBe(0);
 });
 
-test('P1 no gap between the sticky header and the chip bar', async ({ page }) => {
+test('P1 the sticky header leaves no gap and covers nothing once it slides away', async ({ page }) => {
   await page.setViewportSize(VIEWPORTS.phone);
   await page.goto('/ar');
   await settle(page);
-  // Straight after the jump down: the header has slid away and the chip bar has moved up with it.
+  // Header at the top on load: its top edge touches the top of the screen once the ticker has scrolled off.
   await page.evaluate(() => window.scrollTo({ top: 2500, behavior: 'instant' as ScrollBehavior }));
   await page.waitForTimeout(500);
-  const gap = await page.evaluate(() => {
-    const header = document.querySelector('.site-header')!.getBoundingClientRect();
-    const chips = document.querySelector('.chip-bar')!.getBoundingClientRect();
-    return Math.round(chips.top - header.bottom);
+  const r = await page.evaluate(() => {
+    const hdr = document.querySelector('.site-header')!.getBoundingClientRect();
+    return { top: Math.round(hdr.top), bottom: Math.round(hdr.bottom), height: Math.round(hdr.height) };
   });
-  expect(Math.abs(gap)).toBeLessThanOrEqual(1);
+  expect(r.height).toBe(56); // never changes height
+  // Either showing (stuck at 0) or slid fully away — never half-way with a gap.
+  expect(r.top === 0 || r.bottom <= 0).toBe(true);
 });
 
-test('P1 the sticky top chrome is at most 100px once the header is away', async ({ page }) => {
+test('P1 the sticky top chrome is at most 100px (0px once the header has slid away)', async ({ page }) => {
   await page.setViewportSize(VIEWPORTS.phone);
   await page.goto('/ar');
   await settle(page);
@@ -139,43 +140,9 @@ test('P1 the sticky top chrome is at most 100px once the header is away', async 
   }
   await page.waitForTimeout(500);
   const covered = await page.evaluate(() => {
-    const bars = ['.site-header', '.chip-bar']
-      .map((s) => document.querySelector(s))
-      .filter(Boolean)
-      .map((el) => el!.getBoundingClientRect())
-      .filter((r) => r.bottom > 0 && r.top < 1);
-    return bars.length ? Math.round(Math.max(...bars.map((r) => r.bottom))) : 0;
+    const r = document.querySelector('.site-header')!.getBoundingClientRect();
+    return r.bottom > 0 && r.top < 1 ? Math.round(r.bottom) : 0;
   });
   console.log(`P1 sticky top chrome while scrolling down: ${covered}px`);
   expect(covered).toBeLessThanOrEqual(100);
-});
-
-test('P1 chip tap scrolls to its section, highlights that chip and centres it in the row (RTL)', async ({ page }) => {
-  await page.setViewportSize(VIEWPORTS.phone);
-  await page.goto('/ar');
-  await settle(page);
-  for (const cat of ['burgers', 'goat', 'meals']) {
-    await page.locator(`.chip-bar [data-cat="${cat}"]`).click();
-    await page.waitForTimeout(1200);
-    const r = await page.evaluate((c) => {
-      const bar = document.querySelector('.chip-bar')!.getBoundingClientRect();
-      const sec = document.getElementById(`cat-${c}`)!.getBoundingClientRect();
-      const row = document.querySelector('.chip-bar .chip-row')!.getBoundingClientRect();
-      const chip = document.querySelector(`.chip-bar [data-cat="${c}"]`)!;
-      const cr = chip.getBoundingClientRect();
-      return {
-        dir: document.documentElement.dir,
-        current: chip.getAttribute('aria-current'),
-        sectionTop: Math.round(sec.top), barBottom: Math.round(bar.bottom),
-        offCentre: Math.round(Math.abs(cr.left + cr.width / 2 - (row.left + row.width / 2))),
-        chipVisible: cr.left >= row.left - 1 && cr.right <= row.right + 1,
-      };
-    }, cat);
-    expect(r.dir).toBe('rtl');
-    expect(r.current, `${cat}: active is ${await page.evaluate(() => document.querySelector(".chip-bar [aria-current]")?.getAttribute("data-cat"))} at y=${await page.evaluate(() => Math.round(scrollY))}`).toBe("true");
-    // The section starts just below the sticky chrome (never hidden under it).
-    expect(r.sectionTop, cat).toBeGreaterThanOrEqual(r.barBottom - 2);
-    expect(r.sectionTop - r.barBottom, cat).toBeLessThanOrEqual(80);
-    expect(r.chipVisible, cat).toBe(true);
-  }
 });

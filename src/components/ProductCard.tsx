@@ -3,6 +3,7 @@
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import Link from 'next/link';
 import { useState } from 'react';
+import { site } from '@/config/site';
 import { discountPct, qtyRule, wasPrice, type Product } from '@/data/catalog';
 import { money } from '@/lib/format';
 import { fromSize } from '@/lib/search';
@@ -19,6 +20,7 @@ export function StockBadges({ p, withDiscount = true }: { p: Product; withDiscou
   return (
     <>
       {p.stock === 'out' && <span className="badge badge-out">{t.out}</span>}
+      {p.stock !== 'out' && site.popularProducts.includes(p.id) && <span className="badge badge-popular" data-testid="popular-badge"><Icon name="star" size={12} weight="fill" />&nbsp;{t.popular}</span>}
       {p.stock !== 'out' && withDiscount && pct > 0 && <span className="badge badge-discount num" data-testid="discount-badge">{t.discountBadge(pct)}</span>}
       {p.stock !== 'out' && p.storage === 'fresh' && <span className="badge badge-fresh">{t.fresh}</span>}
       {p.stock !== 'out' && p.storage === 'frozen' && <span className="badge badge-frozen">{t.frozen}</span>}

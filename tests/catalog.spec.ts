@@ -43,7 +43,7 @@ for (const lang of ['ar', 'en'] as const) {
     }
 
     test('discount badges show the percentage calculated from regular and offer price', async ({ page }) => {
-      await page.goto(`/${lang}/search`);
+      await page.goto(`/${lang}`);
       await settle(page);
       for (const p of products) {
         const cheapest = p.sizes.reduce((a, b) => (b.price < a.price ? b : a));
@@ -53,14 +53,35 @@ for (const lang of ['ar', 'en'] as const) {
       }
     });
 
-    test('kg amounts: 0.5 steps and quick buttons update the live total', async ({ page }) => {
+    test('kg amounts: the customer types their own kg (and − / + still work); the live total follows', async ({ page }) => {
       await page.goto(`/${lang}/product/naimi-local`);
       await settle(page);
-      await page.getByRole('button', { name: lang === 'ar' ? '2 كغ' : '2 kg', exact: true }).click();
-      await expect(page.getByTestId('live-total')).toContainText(fmt(138, lang));
+      const amount = page.getByTestId('amount-input');
+      await expect(page.getByRole('button', { name: lang === 'ar' ? '2 كغ' : '2 kg', exact: true })).toHaveCount(0); // no quick buttons
+      await amount.fill('1.3');
+      await expect(page.getByTestId('live-total')).toContainText(fmt(89.7, lang)); // 1.3 × 69
+      await amount.fill('٢٫٥'); // Arabic digits and decimal mark
+      await expect(page.getByTestId('live-total')).toContainText(fmt(172.5, lang));
       await page.getByRole('button', { name: lang === 'ar' ? 'إنقاص الكمية' : 'Decrease quantity' }).first().click();
-      await expect(page.getByTestId('live-total')).toContainText(fmt(103.5, lang));
-      await expect(page.getByTestId('live-total').locator('s')).toContainText(fmt(118.5, lang));
+      await expect(page.getByTestId('live-total')).toContainText(fmt(138, lang)); // 2 kg
+      await expect(page.getByTestId('live-total').locator('s')).toContainText(fmt(158, lang)); // regular 79 × 2
+      // Out of range is clamped when the field loses focus.
+      await amount.fill('80');
+      await amount.blur();
+      await expect(amount).toHaveValue('50');
+      await amount.fill('0.2');
+      await amount.blur();
+      await expect(amount).toHaveValue('0.5');
+    });
+
+    test('a typed kg amount goes into the cart as typed', async ({ page }) => {
+      await page.goto(`/${lang}/product/naimi-local`);
+      await settle(page);
+      await page.getByTestId('amount-input').fill('1.3');
+      await page.getByTestId('amount-input').blur();
+      await page.getByTestId('add-to-cart').filter({ visible: true }).first().click();
+      const raw = await page.evaluate(() => JSON.parse(localStorage.getItem('hab-store-v1') ?? '{}'));
+      expect(raw.lines?.[0]?.qty).toBe(1.3);
     });
   });
 }
@@ -79,7 +100,8 @@ test('cart line shows the chosen options (e.g. "Local Hawar Meat - Boneless - 2 
   await page.goto('/en/product/hawar-local');
   await settle(page);
   await page.locator('button[role="radio"][data-size="boneless"]').click();
-  await page.getByRole('button', { name: '2 kg', exact: true }).click();
+  await page.getByTestId('amount-input').fill('2');
+  await page.getByTestId('amount-input').blur();
   await page.locator('button[role="radio"][data-cut="mandi"]').click();
   await page.locator('.desktop-add [data-testid="add-to-cart"]').click();
   await page.getByTestId('open-cart').click();

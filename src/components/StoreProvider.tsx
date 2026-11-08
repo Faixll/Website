@@ -3,6 +3,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { Lang } from '@/config/site';
 import { allowedCuts, productById, qtyRule, validQty, type CutId } from '@/data/catalog';
+import { track } from '@/lib/analytics';
+import { unitPrice } from '@/lib/pricing';
 import { getDict, type Dict } from '@/lib/i18n';
 import { lineKey, totals, type CartLine, type Fulfilment } from '@/lib/pricing';
 
@@ -91,10 +93,16 @@ export function StoreProvider({ lang, children }: { lang: Lang; children: React.
     setLines((prev) => {
       const found = prev.find((x) => x.key === key);
       const max = maxFor(l.productId);
-      if (found) return prev.map((x) => (x.key === key ? { ...x, qty: Math.min(max, x.qty + qty) } : x));
-      return [...prev, { ...l, notes: l.notes.trim(), key, qty: Math.min(max, qty) }];
+      const sum = (a: number) => Math.round(Math.min(max, a) * 1000) / 1000; // 1.3 + 0.5 kg stays 1.8, not 1.7999…
+      if (found) return prev.map((x) => (x.key === key ? { ...x, qty: sum(x.qty + qty) } : x));
+      return [...prev, { ...l, notes: l.notes.trim(), key, qty: sum(qty) }];
     });
     setAddedTick((n) => n + 1);
+    const p = productById(l.productId);
+    if (p) {
+      const price = unitPrice(p, l.sizeId, l.cutId);
+      track({ name: 'add_to_cart', value: Math.round(price * qty * 100) / 100, items: [{ id: p.id, name: p.name.en, price, quantity: qty }] });
+    }
   }, []);
 
   const setQty = useCallback((key: string, qty: number) => {
