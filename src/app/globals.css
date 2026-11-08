@@ -238,8 +238,8 @@ html[lang='en'] .caps { text-transform: uppercase; letter-spacing: .06em; }
 .scroll-progress { position: absolute; top: 0; inset-inline: 0; height: 3px; background: var(--red); transform-origin: left; transform: scaleX(0); }
 [dir='rtl'] .scroll-progress { transform-origin: right; }
 .logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; flex: none; min-height: var(--tap); }
-.logo .mark { width: 46px; height: 46px; background: center / contain no-repeat; transition: transform .25s var(--ease); }
-@media (min-width: 768px) { .logo .mark { width: 58px; height: 58px; } }
+.logo .mark { width: 48px; height: 48px; background: center / contain no-repeat; transition: transform .25s var(--ease); }
+@media (min-width: 768px) { .logo .mark { width: 56px; height: 56px; } }
 .logo .name { font-family: var(--f-hero), var(--f-head); font-size: 22px; line-height: 1; color: var(--ink); }
 html[lang='en'] .logo .name { font-family: var(--f-head); font-weight: 700; font-size: 18px; }
 .site-header.compact .logo .mark { transform: scale(.86); }

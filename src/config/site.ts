@@ -23,15 +23,16 @@ export const site = {
   /**
    * The client's final logo (albada-final-logo.zip, see docs/BRAND-LOGO-README.txt). Rules: the full round logo
    * is never shown smaller than 120px — below that the small version (Arabic name + cleaver) is used.
+   * File names carry a version: /brand files are cached for a day, so a new logo must get a new name.
    */
-  logo: '/brand/albada-mark.svg',
+  logo: '/brand/albada-small-2026.svg',
   brand: {
     /** Small version: header, product placeholders, 404 (favicon.svg from the pack). */
-    mark: '/brand/albada-mark.svg',
+    mark: '/brand/albada-small-2026.svg',
     /** Full round logo, master (footer at 128px, anywhere ≥ 120px). */
-    round: '/brand/albada-logo-round.svg',
+    round: '/brand/albada-round-2026.svg',
     /** Beige version, only for black or photo backgrounds. */
-    roundInverted: '/brand/albada-logo-round-inverted.svg',
+    roundInverted: '/brand/albada-round-inverted-2026.svg',
   },
 
   /* ---------------- contact (TODO: all placeholders) ---------------- */

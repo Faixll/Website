@@ -113,9 +113,11 @@ This script only makes real photos and AI images consistent (crop, brightness ra
 ## 5. THE LOGO
 The logo is already made, in the folder `logo/`:
 The final logo files come from the client (albada-final-logo.zip); their rules are in `docs/BRAND-LOGO-README.txt`.
-- `albada-logo-round.svg` — master round logo (footer, anywhere 120px or larger).
-- `albada-logo-round-inverted.svg` — beige version for black or photo backgrounds only.
-- `albada-mark.svg` — the small version (Arabic name + cleaver) for the header, placeholders and the favicon.
+- `albada-round-2026.svg` (pack: albada-logo-round.svg) — master round logo: header (48–56px) and footer.
+- `albada-round-inverted-2026.svg` (pack: albada-logo-round-inverted.svg) — beige version for black or photo backgrounds only.
+- `albada-small-2026.svg` (pack: favicon/favicon.svg) — the small version (Arabic name + cleaver) for product placeholders, 404 and the favicon.
+
+File names carry a version (-2026) because /brand files are cached for a day: a new logo must get a new name.
 
 Colors: red #A51D26, beige #F4ECDF, black #141110.
 This is a clean first version. If the client wants a different mark (for example a camel silhouette), give these files to a designer as the layout and spacing base. Do not use an AI image tool to write the Arabic name.

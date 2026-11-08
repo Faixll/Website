@@ -52,7 +52,7 @@ export default async function Home({ params }: { params: Promise<{ lang: Lang }>
     name: site.name[lang],
     alternateName: site.name[lang === 'ar' ? 'en' : 'ar'],
     url: `${site.url}/${lang}`,
-    logo: `${site.url}/icons/icon-512.png`,
+    logo: `${site.url}/icons/icon-512-2026.png`,
     ...(real(site.phone) ? { telephone: site.phone } : {}),
     ...(real(site.email) ? { email: site.email } : {}),
     department: branches.map((b) => ({

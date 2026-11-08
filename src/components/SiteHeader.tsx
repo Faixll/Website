@@ -36,8 +36,8 @@ export function SiteHeader() {
         <motion.div className="scroll-progress" style={{ scaleX: scrollYProgress }} aria-hidden />
         <div className="container bar">
           <Link href={`/${lang}`} className="logo" aria-label={site.name[lang]}>
-            {/* One logo only: the round Albada badge (the client's logo), on phone and desktop. */}
-            <span className="mark" aria-hidden style={{ backgroundImage: `url(${site.brand.mark})` }} />
+            {/* One logo only: the client's master round logo (their README: header at 44–56 px), phone and desktop. */}
+            <span className="mark" aria-hidden style={{ backgroundImage: `url(${site.brand.round})` }} />
           </Link>
           <div style={{ flex: 1 }} />
           <div className="header-actions">

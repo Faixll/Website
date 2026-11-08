@@ -35,7 +35,8 @@ const security = [
 ];
 
 /** Files in /public don't have hashed names, so they get a day in the browser cache (plus a week of
- *  stale-while-revalidate); Next's own /_next/static files are already cached for a year by Next. */
+ *  stale-while-revalidate). A changed logo/icon must therefore get a NEW file name (e.g. -2026).
+ *  The favicon is left to Next's default (always re-checked). */
 const publicCache = [{ key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' }];
 
 /** @type {import('next').NextConfig} */
@@ -57,7 +58,6 @@ const nextConfig = {
       { source: '/brand/:file*', headers: publicCache },
       { source: '/icons/:file*', headers: publicCache },
       { source: '/images/:file*', headers: publicCache },
-      { source: '/favicon.ico', headers: publicCache },
     ];
   },
   experimental: {
