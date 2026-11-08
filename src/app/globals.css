@@ -206,21 +206,23 @@ html[lang='en'] .caps { text-transform: uppercase; letter-spacing: .06em; }
 .option .o-sub { font-size: 14px; color: var(--muted); }
 
 /* ======================== ticker, header, progress ======================== */
-/* The black announcement bar: twice the earlier size, one message at a time, a new one every 3 s
-   (each slides up into place; transform + opacity only). Pure CSS, so it works before JavaScript loads. */
-.ticker { position: relative; background: var(--ink); color: var(--on-ink); height: var(--announce-h); overflow: hidden;
+/* The black announcement bar: twice the earlier size, one message at a time, a new one every 3 s.
+   Each message slides in sideways and out the other side, the same way the old ticker moved
+   (right → left in English, left → right in Arabic). Transform + opacity only; pure CSS. */
+.ticker { --tk-dir: 1; position: relative; background: var(--ink); color: var(--on-ink); height: var(--announce-h); overflow: hidden;
   font-size: clamp(16px, 4.2vw, 24px); font-weight: 600; }
 .ticker-track { position: absolute; inset: 0; }
 .ticker-item { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px; padding-inline: var(--gutter);
-  text-align: center; line-height: 1.25; opacity: 0; transform: translateY(100%);
+  text-align: center; line-height: 1.25; opacity: 0; transform: translateX(calc(var(--tk-dir) * 100%));
   animation: ticker-cycle var(--ticker-total, 9s) var(--ease) infinite; animation-delay: var(--ticker-delay, 0s); }
 .ticker-item svg { color: var(--gold); flex: none; width: 1.1em; height: 1.1em; }
 .ticker:hover .ticker-item, .ticker:active .ticker-item { animation-play-state: paused; }
-/* For 3 messages × 3 s: in at 0–4%, stays until 30%, out by 34% (one third of the cycle each). */
+[dir='rtl'] .ticker { --tk-dir: -1; }
+/* For 3 messages × 3 s: slides in during 0–5%, stays until 28%, slides out by 33% (one third of the cycle each). */
 @keyframes ticker-cycle {
-  0% { opacity: 0; transform: translateY(100%); }
-  4%, 30% { opacity: 1; transform: none; }
-  34%, 100% { opacity: 0; transform: translateY(-100%); }
+  0% { opacity: 0; transform: translateX(calc(var(--tk-dir) * 100%)); }
+  5%, 28% { opacity: 1; transform: none; }
+  33%, 100% { opacity: 0; transform: translateX(calc(var(--tk-dir) * -100%)); }
 }
 @media (prefers-reduced-motion: reduce) {
   .ticker-item { animation: none; }
