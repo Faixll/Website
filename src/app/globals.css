@@ -1,5 +1,5 @@
 /* ==========================================================
-   Hawar Albada — design system v3 ("premium butcher": deep red, warm beige, warm black, small gold details)
+   Albada — design system v3 ("premium butcher": deep red, warm beige, warm black, small gold details)
    All colours are tokens here; no hard-coded colours elsewhere. RTL-safe (logical properties). Mobile-first.
    ========================================================== */
 :root {
@@ -229,7 +229,7 @@ html[lang='en'] .caps { text-transform: uppercase; letter-spacing: .06em; }
 [dir='rtl'] .scroll-progress { transform-origin: right; }
 .logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; flex: none; min-height: var(--tap); }
 .logo .mark { width: 36px; height: 36px; background: center / contain no-repeat; transition: transform .25s var(--ease); }
-.logo .wordmark { height: 44px; width: 107px; background: center / contain no-repeat; display: none; }
+.logo .wordmark { height: 56px; width: 152px; background: center / contain no-repeat; display: none; }
 .logo .name { font-family: var(--f-hero), var(--f-head); font-size: 22px; line-height: 1; color: var(--ink); }
 html[lang='en'] .logo .name { font-family: var(--f-head); font-weight: 700; font-size: 18px; }
 .site-header.compact .logo .mark { transform: scale(.86); }
@@ -597,7 +597,7 @@ body.hide-tabbar .wa-fab, body.has-actionbar .wa-fab { display: none; }
 /* ======================== footer ======================== */
 .footer { background: var(--ink); color: var(--on-ink); padding-block: var(--s7) calc(var(--s6) + var(--footer-end)); font-size: 15px; }
 .footer a { color: var(--on-ink); }
-.footer .f-logo { height: 52px; width: auto; }
+.footer .f-logo { height: 96px; width: 96px; }
 .footer .cols { display: grid; gap: var(--s6); }
 @media (min-width: 768px) { .footer .cols { grid-template-columns: 1.4fr 1fr 1fr 1fr; } }
 .footer h2 { font-size: 18px; color: var(--on-ink); margin-bottom: var(--s3); }

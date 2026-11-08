@@ -1,6 +1,6 @@
 # IMAGE PROMPTS, HERO VIDEO, LOGO AND PHOTO PROCESSING
 
-Everything about pictures for Hawar Albada is here. The website prompt (`PROMPT.md`) tells your coding tool to follow this file.
+Everything about pictures for Albada (البدع) is here. The website prompt (`PROMPT.md`) tells your coding tool to follow this file.
 
 ## 0. Read this first (honest notes)
 1. **The three screenshots from the client** (`references/03-client-photos-reference-only/`) are other shops' ads. They carry those shops' names and phone numbers, and they are low-quality screenshots. They can't be "enhanced" and used legally or cleanly, so they are style references only. Ask the client for his own original photos instead (phone photos are fine, see section 6).
@@ -112,12 +112,11 @@ This script only makes real photos and AI images consistent (crop, brightness ra
 
 ## 5. THE LOGO
 The logo is already made, in the folder `logo/`:
-- `hawar-albada-logo.svg` (horizontal, for beige backgrounds) and `hawar-albada-logo-light.svg` (for black or red backgrounds)
-- `hawar-albada-logo-stacked.svg` (mark above the name)
-- `hawar-albada-mark.svg` (the red seal with the letter ح, for the favicon and the small header logo)
-- `png/`: ready exports (`icon-512.png`, `apple-touch-icon-180.png`, `favicon-32.png` and PNG versions of each logo)
-- `logo-preview-sheet.png`: all versions on beige and black.
-How it was made: the Arabic name "حوار البدع" uses the Lalezar font, the English "HAWAR ALBADA" uses Playfair Display, and the line "لتجارة اللحوم الطازجة" (the same tagline the site already had) uses IBM Plex Sans Arabic. All letters are converted to outlines, so the files don't need any font installed and the Arabic letters are correctly joined. Colors: red #A51D26, beige #F4ECDF, black #141110.
+- `albada-logo-round.svg` — the client's round logo (red circle, beige ring, "البدع", a rule with a small cleaver, "ALBADA", the tagline). Footer, app icon, share image.
+- `albada-mark.svg` — the same badge with only "البدع", readable down to favicon size (phone header, favicon).
+- `albada-logo.svg` — badge + name block for beige backgrounds (desktop header).
+
+How it was made: `node scripts/brand-albada.mjs`. The letters are the exact outlines of the original lettering ("البدع" in Lalezar, "ALBADA" in Playfair Display, the tagline in IBM Plex Sans Arabic), taken word by word from the first logo pack, so no font is needed and the Arabic stays correctly joined. Colors: red #A51D26, beige #F4ECDF, black #141110.
 This is a clean first version. If the client wants a different mark (for example a camel silhouette), give these files to a designer as the layout and spacing base. Do not use an AI image tool to write the Arabic name.
 
 ## 6. IF YOU TAKE REAL PHOTOS (best option)

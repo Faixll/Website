@@ -172,11 +172,16 @@ test('F: no category strip or chips anywhere (all products are shown together)',
   }
 });
 
-test('H: English uses "Hawar Albada" everywhere', async ({ page }) => {
-  for (const path of ['/en', '/en/stores', '/en/product/hawar-local']) {
+test('H: the shop is called "Albada" / "البدع" everywhere (the old name "Hawar Albada" / "حوار البدع" is gone)', async ({ page }) => {
+  for (const path of ['/en', '/en/stores', '/en/product/hawar-local', '/ar', '/ar/stores']) {
     await page.goto(path);
     await settle(page);
     const html = await page.content();
-    expect.soft(html.includes('Hawar Al Bada'), path).toBe(false);
+    for (const old of ['Hawar Albada', 'Hawar Al Bada', 'حوار البدع']) expect.soft(html.includes(old), `${path}: ${old}`).toBe(false);
+    expect.soft(html.includes(path.startsWith('/en') ? 'Albada' : 'البدع'), path).toBe(true);
+  }
+  for (const f of ['/manifest.webmanifest']) {
+    const body = await (await page.request.get(f)).text();
+    expect(body.includes('حوار البدع') || body.includes('Hawar')).toBe(false);
   }
 });

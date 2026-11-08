@@ -4,8 +4,8 @@ import type { MetadataRoute } from 'next';
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: '/ar',
-    name: 'حوار البدع لتجارة اللحوم الطازجة | Hawar Albada',
-    short_name: 'حوار البدع',
+    name: 'البدع لتجارة اللحوم الطازجة | Albada',
+    short_name: 'البدع',
     description: 'لحوم طازجة وذبائح يومية، توصل لبابك — Fresh meat and daily livestock, delivered to your door.',
     start_url: '/ar',
     scope: '/',

@@ -19,8 +19,8 @@ export const otpAvailable = () => process.env.NODE_ENV !== 'production' || otpPr
 
 export async function sendOtp(phone: string, code: string, lang: 'ar' | 'en' = 'ar'): Promise<boolean> {
   const text = lang === 'ar'
-    ? `رمز الدخول إلى حوار البدع: ${code}\nصالح لمدة 5 دقائق. لا تشاركه مع أحد.`
-    : `Your Hawar Albada sign-in code: ${code}\nValid for 5 minutes. Do not share it.`;
+    ? `رمز الدخول إلى البدع: ${code}\nصالح لمدة 5 دقائق. لا تشاركه مع أحد.`
+    : `Your Albada sign-in code: ${code}\nValid for 5 minutes. Do not share it.`;
 
   if (process.env.NODE_ENV !== 'production' && !otpProviderConfigured()) {
     console.info(`[otp] code for ${phone}: ${code}`);

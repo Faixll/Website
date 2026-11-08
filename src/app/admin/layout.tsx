@@ -5,7 +5,7 @@ import { isAdmin } from '@/lib/server/session';
 import { logout } from './actions';
 import '../globals.css';
 
-export const metadata: Metadata = { metadataBase: new URL(site.url), title: 'Admin · Hawar Albada', robots: { index: false, follow: false } };
+export const metadata: Metadata = { metadataBase: new URL(site.url), title: 'Admin · Albada', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
 
 /** Staff-only area: orders, points and reviews. Protected by ADMIN_PASSWORD. Never indexed. */
@@ -16,7 +16,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <body style={{ fontFamily: 'system-ui, sans-serif' }}>
         <header className="admin-bar">
           <div className="container" style={{ display: 'flex', alignItems: 'center', gap: 16, minHeight: 56, flexWrap: 'wrap' }}>
-            <b>Hawar Albada · Admin</b>
+            <b>Albada · Admin</b>
             {admin && (
               <>
                 <Link href="/admin/orders">Orders</Link>

@@ -11,24 +11,25 @@ const everyDay = (ranges: [string, string][], friday?: [string, string][]): Hour
 
 export const site = {
   name: {
-    en: 'Hawar Albada Fresh Meat Trading',
+    en: 'Albada Fresh Meat Trading',
     // TODO: confirm the official Arabic trade name on the trade license.
-    ar: 'حوار البدع لتجارة اللحوم الطازجة',
+    ar: 'البدع لتجارة اللحوم الطازجة',
   },
-  shortName: { en: 'Hawar Albada', ar: 'حوار البدع' },
+  shortName: { en: 'Albada', ar: 'البدع' },
 
   /** TODO: the live domain (used for share links and SEO). */
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://example.ae',
 
-  /** Logo files (from the brand pack, in /public/brand). */
-  logo: '/brand/hawar-albada-mark.svg',
+  /** Logo files in /public/brand (built by scripts/brand-albada.mjs from the client's round logo). */
+  logo: '/brand/albada-mark.svg',
   brand: {
-    mark: '/brand/hawar-albada-mark.svg',
-    /** Horizontal logo for beige backgrounds (desktop header, 44px high). */
-    logo: '/brand/hawar-albada-logo.svg',
-    /** Horizontal logo for black / red backgrounds (footer). */
-    logoLight: '/brand/hawar-albada-logo-light.svg',
-    stacked: '/brand/hawar-albada-logo-stacked.svg',
+    /** Round badge with the name only — small sizes (phone header, favicon). */
+    mark: '/brand/albada-mark.svg',
+    /** Badge + name block for beige backgrounds (desktop header, 44px high). */
+    logo: '/brand/albada-logo.svg',
+    /** The full round logo (footer on black, share image, app icon). */
+    logoLight: '/brand/albada-logo-round.svg',
+    round: '/brand/albada-logo-round.svg',
   },
 
   /* ---------------- contact (TODO: all placeholders) ---------------- */

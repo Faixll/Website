@@ -37,7 +37,7 @@ export function Footer({ lang }: { lang: Lang }) {
       <div className="container">
         <div className="cols">
           <div className="stack">
-            <img className="f-logo" src={site.brand.logoLight} alt={site.name[lang]} width={127} height={52} loading="lazy" />
+            <img className="f-logo" src={site.brand.logoLight} alt={site.name[lang]} width={96} height={96} loading="lazy" />
             <p style={{ opacity: 0.85 }}>{t.heroSub}</p>
             <div>
               <h2 style={{ marginTop: 8, fontSize: 16 }}>{t.paymentMethods}</h2>
