@@ -50,7 +50,7 @@ test.describe('P2: every piece rendered once', () => {
 test.describe('P3: fixed space on phone', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test('56px header; the ticker scrolls away; chip bar ≤64px, sticky under the header, hides on scroll down and returns on scroll up', async ({ page }) => {
+  test('56px header; the ticker scrolls away; chip bar ≤64px, sticky under the header; on the way down the header slides away and the chips stay at the top', async ({ page }) => {
     await page.goto('/ar');
     await settle(page);
     expect(Math.round((await page.locator('.site-header').boundingBox())!.height)).toBe(56);
@@ -66,14 +66,19 @@ test.describe('P3: fixed space on phone', () => {
     expect(tick === null || tick.y + tick.height <= 0).toBe(true);
     const headerBottom = await page.locator('.site-header').evaluate((e) => e.getBoundingClientRect().bottom);
     expect(Math.abs((await bar.evaluate((e) => e.getBoundingClientRect().top)) - headerBottom)).toBeLessThanOrEqual(2);
-    await expect(bar).not.toHaveClass(/\bhide\b/);
+    await expect(page.locator('.site-header')).not.toHaveClass(/\bhide\b/);
 
+    // Down: header away, chip row stays visible at the very top (only 64px of sticky chrome).
     for (let i = 0; i < 4; i++) { await page.mouse.wheel(0, 500); await page.waitForTimeout(80); }
     await page.waitForTimeout(400);
-    await expect(bar).toHaveClass(/\bhide\b/);
+    await expect(page.locator('.site-header')).toHaveClass(/\bhide\b/);
+    expect(Math.round(await bar.evaluate((e) => e.getBoundingClientRect().top))).toBe(0);
+    expect(Math.round(await bar.evaluate((e) => e.getBoundingClientRect().bottom))).toBeLessThanOrEqual(64);
+    // Up: header back, chips directly under it.
     for (let i = 0; i < 2; i++) { await page.mouse.wheel(0, -300); await page.waitForTimeout(80); }
     await page.waitForTimeout(400);
-    await expect(bar).not.toHaveClass(/\bhide\b/);
+    await expect(page.locator('.site-header')).not.toHaveClass(/\bhide\b/);
+    expect(Math.round(await bar.evaluate((e) => e.getBoundingClientRect().top))).toBe(56);
   });
 });
 

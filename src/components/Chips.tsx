@@ -3,9 +3,16 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { categories, type CategoryId } from '@/data/catalog';
-import { scrollToId, useScrollDirection } from './hooks';
+import { prefersReducedMotion, scrollToId, useScrollDirection } from './hooks';
 import { categoryIcon, Icon } from './Icon';
 import { useStore } from './StoreProvider';
+
+function centerChip(bar: HTMLElement, chip: HTMLElement, reduced: boolean) {
+  const b = bar.getBoundingClientRect();
+  const c = chip.getBoundingClientRect();
+  const delta = c.left + c.width / 2 - (b.left + b.width / 2);
+  if (Math.abs(delta) > 1) bar.scrollBy({ left: delta, behavior: reduced ? 'auto' : 'smooth' });
+}
 
 /** Height of the sticky chrome above the sections: header + chip bar (measured, with the CSS defaults as fallback). */
 function chromeHeight() {
@@ -14,8 +21,13 @@ function chromeHeight() {
   return header + bar;
 }
 
-/** Holds the scroll-spy still until the page stops moving: `scrollend` where it exists, 800ms otherwise. */
-function lockSpy(lock: { current: boolean }) {
+/**
+ * Holds the scroll-spy still while a chip tap scrolls the page: until that scroll's `scrollend`
+ * (800ms fallback where scrollend doesn't exist), then re-checks the active section once.
+ * The scrollend listener is attached a frame AFTER the tap's scroll starts, so the end of an earlier
+ * scroll (a momentum fling, or the browser bringing the chip into view) can't release it early.
+ */
+function lockSpy(lock: { current: boolean }, onRelease: () => void) {
   lock.current = true;
   let done = false;
   const release = () => {
@@ -23,10 +35,22 @@ function lockSpy(lock: { current: boolean }) {
     done = true;
     lock.current = false;
     window.removeEventListener('scrollend', release);
+    onRelease();
   };
-  if ('onscrollend' in window) window.addEventListener('scrollend', release, { once: true });
-  setTimeout(release, 800);
+  const hasScrollEnd = 'onscrollend' in window;
+  requestAnimationFrame(() => { if (hasScrollEnd) window.addEventListener('scrollend', release); });
+  setTimeout(release, hasScrollEnd ? 3000 : 800);
 }
+
+/** The active section: the last one whose top has passed the line under the full chrome (header + chips —
+ *  the same offset as scroll-margin-top, so a tapped section counts whether the header shows or has slid away). */
+function activeSection(sections: HTMLElement[]): CategoryId | '' {
+  const line = chromeHeight() + 24;
+  let id: CategoryId | '' = '';
+  for (const s of sections) if (s.getBoundingClientRect().top <= line) id = s.id.replace('cat-', '') as CategoryId;
+  return id;
+}
+const homeSections = () => categories.map((c) => document.getElementById(`cat-${c.id}`)).filter(Boolean) as HTMLElement[];
 
 /**
  * The single category selector (compact pills, ≤64px high).
@@ -60,12 +84,14 @@ export function CategoryChips({
   // highlight flickers through every section on the way (P1).
   useEffect(() => {
     if (mode !== 'scroll') return;
-    const sections = categories.map((c) => document.getElementById(`cat-${c.id}`)).filter(Boolean) as HTMLElement[];
+    const sections = homeSections();
     const io = new IntersectionObserver(
       (entries) => {
-        if (lockRef.current) return;
-        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-        if (visible[0]) setCurrent(visible[0].target.id.replace('cat-', '') as CategoryId);
+        if (lockRef.current || !entries.some((e) => e.isIntersecting)) return;
+        // The observer only says "something crossed"; adjacent sections overlap the zone by a few pixels,
+        // so the active one is worked out from real positions instead of the top-most intersecting entry.
+        const id = activeSection(sections);
+        if (id) setCurrent((c) => (c === id ? c : id));
       },
       { rootMargin: `-${Math.round(chromeHeight())}px 0px -55% 0px` },
     );
@@ -73,14 +99,12 @@ export function CategoryChips({
     return () => io.disconnect();
   }, [mode]);
 
-  // Keep the highlighted chip visible INSIDE the strip only (scrollIntoView would also move the page — P1).
+  // Centre the highlighted chip INSIDE the strip only. Never scrollIntoView here: it moves the whole page
+  // and fights the user's finger (P1). scrollBy is relative, so it works the same in RTL.
   useEffect(() => {
     const row = rowRef.current;
     const chip = row?.querySelector<HTMLElement>(`[data-cat="${current}"]`);
-    if (!row || !chip) return;
-    const r = row.getBoundingClientRect();
-    const c = chip.getBoundingClientRect();
-    if (c.left < r.left || c.right > r.right) row.scrollBy({ left: c.left - r.left - (r.width - c.width) / 2, behavior: 'auto' });
+    if (row && chip) centerChip(row, chip, prefersReducedMotion());
   }, [current]);
 
   const chip = (id: CategoryId | '', label: string) => {
@@ -100,7 +124,7 @@ export function CategoryChips({
           onClick={(e) => {
             e.preventDefault();
             setCurrent(id);
-            lockSpy(lockRef);
+            lockSpy(lockRef, () => { const a = activeSection(homeSections()); if (a) setCurrent(a); });
             scrollToId(`cat-${id}`, chromeHeight() + 8);
           }}>{content}</a>
       );

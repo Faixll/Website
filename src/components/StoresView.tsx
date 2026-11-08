@@ -6,6 +6,7 @@ import { branches } from '@/data/places';
 import { normaliseUaeMobile, phoneDisplay, waLink } from '@/lib/format';
 import { BranchCard, directionsUrl } from './BranchCard';
 import { Button, ButtonLink } from './Button';
+import { prefersReducedMotion } from './hooks';
 import { Icon } from './Icon';
 import { useStore } from './StoreProvider';
 
@@ -25,7 +26,7 @@ export function BranchesWithMap() {
         {branches.map((x) => (
           <BranchCard key={x.id} b={x} selected={branches.length > 1 && x.id === sel} onSelect={branches.length > 1 ? () => {
             setSel(x.id);
-            if (!matchMedia('(min-width: 900px)').matches) document.querySelector('.map-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (!matchMedia('(min-width: 900px)').matches) document.querySelector('.map-wrap')?.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'center' }); // user tapped "Map"
           } : undefined} />
         ))}
       </div>

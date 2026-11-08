@@ -43,6 +43,8 @@
   --gutter: 16px;
   --header-h: 56px;
   --chips-h: 64px;
+  --announce-h: 32px;
+  --minicart-h: 0px;
   --tabbar-h: 0px;
   --ease: cubic-bezier(.22, 1, .36, 1);
 }
@@ -204,7 +206,7 @@ html[lang='en'] .caps { text-transform: uppercase; letter-spacing: .06em; }
 .option .o-sub { font-size: 14px; color: var(--muted); }
 
 /* ======================== ticker, header, progress ======================== */
-.ticker { background: var(--ink); color: var(--on-ink); height: 32px; overflow: hidden; font-size: 13px; font-weight: 500; display: flex; align-items: center; }
+.ticker { background: var(--ink); color: var(--on-ink); height: var(--announce-h); overflow: hidden; font-size: 13px; font-weight: 500; display: flex; align-items: center; }
 .ticker-track { display: flex; gap: 48px; white-space: nowrap; padding-inline-start: 100%; animation: ticker 28s linear infinite; }
 [dir='rtl'] .ticker-track { animation-name: ticker-rtl; }
 .ticker:hover .ticker-track, .ticker:active .ticker-track { animation-play-state: paused; }
@@ -509,13 +511,14 @@ body.hide-tabbar .tabbar { display: none; }
 
 /* WhatsApp: 44px, inline-end, above the tab bar; hidden while scrolling down, typing, or when it would cover content */
 .wa-fab {
-  position: fixed; z-index: 44; inset-inline-end: 12px; bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 12px);
+  position: fixed; z-index: 44; inset-inline-end: 12px; bottom: calc(var(--tabbar-h) + var(--minicart-h) + 16px + env(safe-area-inset-bottom));
   width: 44px; height: 44px; border-radius: 50%; background: var(--ink); color: var(--on-ink); display: grid; place-items: center; box-shadow: var(--shadow-float);
   transition: transform .25s var(--ease), opacity .2s var(--ease);
 }
 .wa-fab:hover { background: var(--red); color: var(--white); }
 .wa-fab.away { transform: translateY(120%) scale(.6); opacity: 0; pointer-events: none; }
-body.has-minicart .wa-fab { bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 112px); }
+/* The mini-cart bar (about 96px with its padding) pushes the button up so it never sits on it. */
+body.has-minicart { --minicart-h: 96px; }
 body.hide-tabbar .wa-fab, body.has-actionbar .wa-fab { display: none; }
 
 /* ======================== sheets & drawer ======================== */

@@ -17,6 +17,7 @@ import { useAccount } from './AccountProvider';
 import { BranchStatusLine } from './BranchCard';
 import { SlotPicker } from './HomeParts';
 import { Button, ButtonLink } from './Button';
+import { prefersReducedMotion } from './hooks';
 import { Icon } from './Icon';
 import { useStore } from './StoreProvider';
 
@@ -170,7 +171,7 @@ function CheckoutForm({ form, setForm, totals, priced, disc, setDisc, discError,
     if (Object.keys(e).length) {
       setServerError(t.fixErrors);
       const first = document.querySelector<HTMLElement>(`[data-field="${Object.keys(e)[0]}"]`);
-      first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      first?.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'center' }); // user tapped "Place order"
       first?.querySelector<HTMLElement>('input, select, button')?.focus({ preventScroll: true });
       return false;
     }

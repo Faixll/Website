@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { site } from '@/config/site';
 import { isAdmin } from '@/lib/server/session';
 import { logout } from './actions';
 import '../globals.css';
 
-export const metadata: Metadata = { title: 'Admin · Hawar Albada', robots: { index: false, follow: false } };
+export const metadata: Metadata = { metadataBase: new URL(site.url), title: 'Admin · Hawar Albada', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
 
 /** Staff-only area: orders, points and reviews. Protected by ADMIN_PASSWORD. Never indexed. */
