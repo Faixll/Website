@@ -360,7 +360,7 @@ html[lang='ar'] .hero h1 { min-height: 2.6em; }
 @media (min-width: 1100px) { .grid-all { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 .card { position: relative; display: flex; flex-direction: column; background: var(--surface); border-radius: var(--r-card); padding: var(--s2); border: 1px solid var(--line); transition: transform .15s var(--ease); }
 .card:active { transform: scale(.98); }
-.card .media { position: relative; aspect-ratio: 1; border-radius: var(--r-img); overflow: hidden; background: var(--deep); }
+.card .media { position: relative; aspect-ratio: 3 / 4; border-radius: var(--r-img); overflow: hidden; background: var(--deep); }
 .card .media .ph, .card .media img { transition: transform .3s var(--ease); }
 @media (hover: hover) { .card:hover .media .ph, .card:hover .media img { transform: scale(1.04); } }
 .card .badges { position: absolute; top: 8px; inset-inline-start: 8px; display: flex; gap: 4px; flex-wrap: wrap; z-index: 1; }
@@ -382,10 +382,11 @@ html[lang='ar'] .hero h1 { min-height: 2.6em; }
 .ph .ph-mark { width: 38%; max-width: 120px; aspect-ratio: 1; background: center / contain no-repeat; opacity: .2; }
 .ph.lg { font-size: clamp(18px, 3vw, 26px); }
 .ph.sm .ph-mark { display: none; }
-.img-load { position: absolute; inset: 0; }
-.img-load img { opacity: 0; transition: opacity .3s var(--ease); }
-.img-load.loaded img { opacity: 1; }
+/* Photos paint as soon as they arrive (no opacity fade — a fade-in counts as layout shift and hides content);
+   the shimmer sits BEHIND the photo while it loads. */
+.img-load { position: absolute; inset: 0; isolation: isolate; background: var(--deep); }
 .skeleton { background: var(--deep); position: relative; overflow: hidden; border-radius: var(--r-img); }
+.img-load:not(.loaded)::after { z-index: -1; }
 .skeleton::after, .img-load:not(.loaded)::after { content: ''; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(251, 246, 238, .6), transparent); animation: shimmer 1.4s infinite; }
 @keyframes shimmer { to { transform: translateX(100%); } }
 
@@ -394,7 +395,14 @@ html[lang='ar'] .hero h1 { min-height: 2.6em; }
 .breadcrumb a { text-decoration: none; display: inline-flex; align-items: center; min-height: var(--tap); min-width: var(--tap); }
 .breadcrumb a:hover { color: var(--red); }
 .pdp { display: grid; }
-.pdp-photo { position: relative; aspect-ratio: 1; background: var(--deep); overflow: hidden; }
+.pdp-photo { position: relative; aspect-ratio: 3 / 4; background: var(--deep); overflow: hidden; }
+.pdp-gallery { position: relative; }
+/* Thumbnails: over the bottom of the photo on phones (above the sheet's rounded top), a row below it on computers. */
+.pdp-thumbs { display: flex; gap: var(--s2); justify-content: center; }
+@media (max-width: 767px) { .pdp-thumbs { position: absolute; z-index: 2; inset-inline: 0; bottom: calc(var(--r-sheet) + 20px); } }
+.pdp-thumb { position: relative; width: 52px; aspect-ratio: 3 / 4; padding: 0; border-radius: 10px; overflow: hidden; border: 2px solid var(--surface); background: var(--deep); box-shadow: var(--shadow-float); cursor: pointer; }
+.pdp-thumb[aria-pressed='true'] { border-color: var(--red); }
+.pdp-thumb:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 .pdp-sheet { position: relative; z-index: 1; background: var(--surface); padding: var(--s5) var(--gutter) var(--s6); display: grid; gap: var(--s5); }
 @media (max-width: 899px) {
   .pdp { margin-inline: calc(var(--gutter) * -1); }
@@ -402,7 +410,8 @@ html[lang='ar'] .hero h1 { min-height: 2.6em; }
 }
 @media (min-width: 900px) {
   .pdp { grid-template-columns: 1fr 1fr; gap: var(--s7); align-items: start; padding-top: var(--s4); }
-  .pdp-photo { border-radius: var(--r-card); position: sticky; top: calc(var(--header-h) + 72px); }
+  .pdp-photo { border-radius: var(--r-card); }
+  .pdp-gallery { position: sticky; top: calc(var(--header-h) + 24px); display: grid; gap: var(--s3); }
   .pdp-sheet { border-radius: var(--r-card); padding: var(--s6); border: 1px solid var(--line); }
 }
 .illustrative { position: absolute; bottom: 10px; inset-inline-start: 10px; z-index: 1; }

@@ -8,6 +8,15 @@ import manifest from '@/data/product-images.json';
 
 const available = new Set<string>(manifest.images);
 const illustrative = new Set<string>(manifest.illustrative);
+const alts = manifest.alt as Record<string, { ar: string; en: string }>;
+const galleries = manifest.gallery as Record<string, string[]>;
+
+/** Extra photos for the product page (main photo first). */
+export function galleryOf(p: Product): string[] {
+  const main = imageKey(p);
+  if (!main) return [];
+  return [main, ...(galleries[p.id] ?? []).filter((k) => available.has(k))];
+}
 
 /** Which image file to use: a per-option photo (e.g. hawar-local-boneless) if it exists, else the product photo. */
 export function imageKey(p: Product, sizeId?: string) {
@@ -20,16 +29,17 @@ export const isIllustrative = (p: Product, sizeId?: string) => {
 };
 
 /**
- * The one place product images are rendered: always a 1:1 slot from public/images/products/{id}.webp.
+ * The one place product images are rendered: always a 3:4 slot from public/images/products/{id}.webp
+ * (the shape of the client's photos).
  * Until a real photo exists: a neutral placeholder (beige deep, the logo mark at 20%, the product name).
  * Real photos show a beige shimmer until loaded; the slot size never changes (no layout shift).
  */
 export function ProductImage({
-  p, lang, sizes, priority, large, small, sizeId,
-}: { p: Product; lang: Lang; sizes: string; priority?: boolean; large?: boolean; small?: boolean; sizeId?: string }) {
+  p, lang, sizes, priority, large, small, sizeId, imageId,
+}: { p: Product; lang: Lang; sizes: string; priority?: boolean; large?: boolean; small?: boolean; sizeId?: string; imageId?: string }) {
   const [loaded, setLoaded] = useState(false);
-  const key = imageKey(p, sizeId);
-  const alt = p.image?.alt[lang] ?? p.name[lang];
+  const key = imageId && available.has(imageId) ? imageId : imageKey(p, sizeId);
+  const alt = (key && alts[key]?.[lang]) ?? p.image?.alt[lang] ?? p.name[lang];
   if (key) {
     return (
       <div className={`img-load${loaded ? ' loaded' : ''}`}>

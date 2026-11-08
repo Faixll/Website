@@ -7,7 +7,7 @@ import { Reveal, SectionTitle } from '@/components/Motion';
 import { ProductReviews } from '@/components/ProductReviews';
 import { ProductCard } from '@/components/ProductCard';
 import { ProductConfigurator } from '@/components/ProductConfigurator';
-import { ProductImage } from '@/components/ProductImage';
+import { ProductGallery } from '@/components/ProductGallery';
 import { SiteHeader } from '@/components/SiteHeader';
 import { getDict } from '@/lib/i18n';
 import { alternates } from '@/lib/seo';
@@ -68,9 +68,7 @@ export default async function ProductPage({ params }: { params: Params }) {
           <span aria-current="page">{p.name[lang]}</span>
         </nav>
         <div className="pdp">
-          <div className="pdp-photo">
-            <ProductImage p={p} lang={lang} sizes="(min-width: 900px) 50vw, 100vw" priority large />
-          </div>
+          <ProductGallery p={p} lang={lang} />
           <ProductConfigurator p={p} />
         </div>
 

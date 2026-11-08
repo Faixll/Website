@@ -36,6 +36,8 @@ const ar = {
   // hero
   heroTitle: 'لحوم طازجة وذبائح يومية، توصل لبابك',
   ourSpecialty: 'تميّزنا',
+  photos: 'صور المنتج',
+  photoN: (i: number, n: number) => `صورة ${i} من ${n}`,
   ourProducts: 'منتجاتنا',
   notFoundTitle: 'الصفحة غير موجودة',
   notFoundText: 'ربما تغيّر الرابط أو انتهى العرض. منتجاتنا كلها في الصفحة الرئيسية.',
@@ -420,6 +422,8 @@ const en: Dict = {
 
   heroTitle: 'Fresh meat and daily livestock, delivered to your door',
   ourSpecialty: 'Our specialty',
+  photos: 'Product photos',
+  photoN: (i: number, n: number) => `Photo ${i} of ${n}`,
   ourProducts: 'Our products',
   notFoundTitle: 'Page not found',
   notFoundText: 'The link may have changed or the offer has ended. All our products are on the home page.',

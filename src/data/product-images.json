@@ -1,5 +1,64 @@
 {
-  "_note": "Written by scripts/process-images.mjs. 'images' lists the files in public/images/products (without .webp). Add an id to 'illustrative' if that image is AI-made: the product page then shows 'Illustrative image'.",
-  "images": [],
-  "illustrative": []
+  "_note": "Written by scripts/process-images.mjs ('images'). 'alt' = image descriptions (from Albada_Product_Images.pdf). 'gallery' = extra photos shown on the product page. Add an id to 'illustrative' to show 'Illustrative image' on it.",
+  "images": [
+    "burger-beef",
+    "burger-beef-ingredients",
+    "burger-beef-open",
+    "burger-hawar",
+    "burger-meat",
+    "goat-local",
+    "hawar-local",
+    "kabsa-barriah-2",
+    "naimi-local",
+    "najdi-local"
+  ],
+  "illustrative": [],
+  "alt": {
+    "hawar-local": {
+      "en": "Young camel (hawar) with a light cream coat",
+      "ar": "حوار (صغير الناقة) بلون كريمي فاتح"
+    },
+    "naimi-local": {
+      "en": "Local Naimi sheep: white woolly body, dark brown head and neck",
+      "ar": "خروف نعيمي محلي: جسم أبيض صوفي ورأس ورقبة بنية داكنة"
+    },
+    "najdi-local": {
+      "en": "Local Najdi sheep: black woolly body, white head and legs",
+      "ar": "خروف نجدي محلي: جسم أسود صوفي ورأس وأرجل بيضاء"
+    },
+    "goat-local": {
+      "en": "Local goat: black coat and long drooping ears",
+      "ar": "تيس عارضي محلي: لون أسود وأذنان طويلتان متدليتان"
+    },
+    "burger-meat": {
+      "en": "Raw burger patties on parchment paper",
+      "ar": "أقراص برجر لحم نيئة على ورق زبدة"
+    },
+    "burger-hawar": {
+      "en": "Raw burger patties on parchment paper",
+      "ar": "أقراص برجر نيئة على ورق زبدة"
+    },
+    "burger-beef": {
+      "en": "Closed beef burger box with buns, lettuce, tomato, onion, cheese, sauces and beef patties beside it",
+      "ar": "بوكس برجر لحم بقري مغلق والمكونات بجانبه: خبز، خس، طماطم، بصل، جبن، صلصات وأقراص لحم"
+    },
+    "burger-beef-open": {
+      "en": "Open beef burger box: six patties, buns, lettuce, tomato, onion, cheese and two sauces",
+      "ar": "بوكس برجر لحم بقري مفتوح: ٦ أقراص لحم، خبز، خس، طماطم، بصل، جبن وصلصتان"
+    },
+    "burger-beef-ingredients": {
+      "en": "Open beef burger box with the ingredients flying around it",
+      "ar": "بوكس برجر لحم بقري مفتوح والمكونات تتطاير حوله"
+    },
+    "kabsa-barriah-2": {
+      "en": "Open Barriah kabsa kit for two: Naimi lamb, onions, garlic, cilantro, rice and whole spices",
+      "ar": "علبة كبسة برية مفتوحة لشخصين: لحم نعيمي، بصل، ثوم، كزبرة، رز وبهارات صحيحة"
+    }
+  },
+  "gallery": {
+    "burger-beef": [
+      "burger-beef-open",
+      "burger-beef-ingredients"
+    ]
+  }
 }
