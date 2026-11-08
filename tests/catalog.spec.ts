@@ -1,6 +1,7 @@
 /** Every product and option: offer price shown, discount badge right, cart total right, both languages. */
 import { expect, test } from '@playwright/test';
-import { products } from '../src/data/catalog';
+// Only products with a photo are on the site (the others are hidden until their photo arrives).
+import { shopProducts as products } from '../src/data/shop';
 import { settle, VIEWPORTS } from './helpers';
 
 const fmt = (n: number, lang: 'ar' | 'en') => {
@@ -107,4 +108,24 @@ test('cart line shows the chosen options (e.g. "Local Hawar Meat - Boneless - 2 
   await page.locator('[data-testid="tab-cart"]').filter({ visible: true }).first().click();
   await expect(page.getByTestId('cart-line-label').first()).toHaveText('Boneless - 2 kg - Mandi cut');
   await expect(page.getByTestId('cart-line-total').first()).toHaveText('AED 138.00');
+});
+
+test('the live total never shows two numbers on top of each other while the amount changes', async ({ page }) => {
+  await page.goto('/ar/product/najdi-local');
+  await settle(page);
+  const plus = page.getByRole('button', { name: 'زيادة الكمية' }).first();
+  const seen: string[] = [];
+  for (let i = 0; i < 6; i++) {
+    await plus.click();
+    for (let k = 0; k < 4; k++) {
+      seen.push(await page.getByTestId('live-total').evaluate((el) => {
+        const nums = el.querySelectorAll('.anim-num-in');
+        return `${nums.length}:${el.textContent}`;
+      }));
+      await page.waitForTimeout(40);
+    }
+  }
+  // Each sample: the price and the struck-through regular price, one value each (2 spans), never more.
+  for (const s of seen) expect(Number(s.split(':')[0]), s).toBeLessThanOrEqual(2);
+  await expect(page.getByTestId('live-total')).toContainText('276.00'); // 1 kg + 6 × 0.5 kg = 4 kg × 69
 });

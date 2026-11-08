@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { LANGS, site, type Lang } from '@/config/site';
-import { productById, products } from '@/data/catalog';
+import { shopProducts as products, listedProduct as productById } from '@/data/shop';
 import { Reveal, SectionTitle } from '@/components/Motion';
 import { ProductReviews } from '@/components/ProductReviews';
 import { ProductCard } from '@/components/ProductCard';

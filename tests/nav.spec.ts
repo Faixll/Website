@@ -1,5 +1,6 @@
 /** Phone navigation: tab bar (Home, Cart, Profile — search was removed), profile → checkout prefill. */
 import { expect, test } from '@playwright/test';
+import { shopProducts } from '../src/data/shop';
 import { settle, VIEWPORTS } from './helpers';
 
 test.use({ viewport: VIEWPORTS.phone });
@@ -68,7 +69,7 @@ test('search was removed: no search box anywhere, and old /search links land on 
   await expect(page).toHaveURL((u) => u.pathname === '/ar' || u.pathname === '/ar/');
   await settle(page);
   await expect(page.locator('input[type="search"]')).toHaveCount(0);
-  await expect(page.getByTestId('product-grid').locator('[data-testid="product-card"]')).toHaveCount(10);
+  await expect(page.getByTestId('product-grid').locator('[data-testid="product-card"]')).toHaveCount(shopProducts.length);
 });
 
 test('Profile saves delivery details on this device and checkout prefills them', async ({ page }) => {

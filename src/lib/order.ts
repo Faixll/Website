@@ -4,6 +4,7 @@
  */
 import { site, type Lang } from '@/config/site';
 import { allowedCuts, productById, validQty, type CutId } from '@/data/catalog';
+import { isListed } from '@/data/shop';
 import { branchById, emirates } from '@/data/places';
 import { normaliseUaeMobile } from './format';
 import { checkRedemption, type Redemption } from './points';
@@ -63,7 +64,7 @@ export function cleanLines(lines: OrderInput['lines']): CartLine[] {
   if (!Array.isArray(lines)) return [];
   return lines.slice(0, 50).flatMap((l) => {
     const p = productById(String(l?.productId));
-    if (!p || p.stock === 'out') return [];
+    if (!p || p.stock === 'out' || !isListed(p.id)) return []; // hidden products (no photo yet) can't be ordered
     if (!p.sizes.some((s) => s.id === l.sizeId) || !allowedCuts(p).includes(l.cutId as CutId)) return [];
     const qty = Number(l.qty);
     if (!validQty(p, qty)) return [];

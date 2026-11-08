@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { Lang } from '@/config/site';
 import { allowedCuts, productById, qtyRule, validQty, type CutId } from '@/data/catalog';
+import { isListed } from '@/data/shop';
 import { track } from '@/lib/analytics';
 import { unitPrice } from '@/lib/pricing';
 import { getDict, type Dict } from '@/lib/i18n';
@@ -47,7 +48,7 @@ function sanitise(lines: unknown): CartLine[] {
   return lines.flatMap((raw: CartLine) => {
     const l = raw && OLD_OPTION_IDS[raw.sizeId] ? { ...raw, sizeId: OLD_OPTION_IDS[raw.sizeId] } : raw;
     const p = productById(l?.productId);
-    if (!p || !p.sizes.some((s) => s.id === l.sizeId) || !allowedCuts(p).includes(l.cutId)) return [];
+    if (!p || !isListed(p.id) || !p.sizes.some((s) => s.id === l.sizeId) || !allowedCuts(p).includes(l.cutId)) return [];
     const qty = Number(l.qty);
     if (!validQty(p, qty)) return [];
     const notes = String(l.notes ?? '').slice(0, 200);

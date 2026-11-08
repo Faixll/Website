@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { site } from '@/config/site';
-import { products } from '@/data/catalog';
+import { shopProducts as products } from '@/data/shop';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const paths = ['', '/stores', '/terms', '/privacy', '/refund', ...products.map((p) => `/product/${p.id}`)];

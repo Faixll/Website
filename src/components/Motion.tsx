@@ -4,7 +4,7 @@
  * P5: content is fully visible on first paint and without JavaScript. Reveal effects are applied only after
  * hydration and only to elements that start BELOW the fold — and they move (transform) rather than fade.
  */
-import { AnimatePresence, motion, MotionConfig, useInView, useReducedMotion } from 'motion/react';
+import { motion, MotionConfig, useInView, useReducedMotion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 
 export const EASE = [0.22, 1, 0.36, 1] as const;
@@ -53,18 +53,14 @@ export function SectionTitle({ children, id }: { children: React.ReactNode; id?:
   );
 }
 
-/** A number/price that slides when it changes (vertical, 200 ms). */
+/**
+ * A number/price that changes cleanly: the old value is replaced at once (never two numbers on top of each
+ * other) and the new one rises 6px into place in 180 ms (transform only; reduced motion: no movement).
+ */
 export function AnimatedValue({ value, className }: { value: string; className?: string }) {
-  const reduce = useReducedMotion();
   return (
     <span className={`anim-num ${className ?? ''}`}>
-      <AnimatePresence mode="popLayout" initial={false}>
-        <motion.span key={value} style={{ gridArea: '1 / 1' }}
-          initial={{ y: reduce ? 0 : '100%', opacity: reduce ? 0 : 1 }} animate={{ y: 0, opacity: 1 }}
-          exit={{ y: reduce ? 0 : '-100%', opacity: reduce ? 0 : 1 }} transition={{ duration: reduce ? 0.1 : 0.2, ease: EASE }}>
-          {value}
-        </motion.span>
-      </AnimatePresence>
+      <span key={value} className="anim-num-in">{value}</span>
     </span>
   );
 }

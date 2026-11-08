@@ -185,3 +185,21 @@ test('H: the shop is called "Albada" / "البدع" everywhere (the old name "Ha
     expect(body.includes('حوار البدع') || body.includes('Hawar')).toBe(false);
   }
 });
+
+test('no image placeholders: every product shown has a photo; products without one are hidden and return 404', async ({ page, request }) => {
+  const { hiddenProducts, shopProducts } = await import('../src/data/shop');
+  for (const path of ['/ar', '/en']) {
+    await page.goto(path);
+    await settle(page);
+    expect(await page.locator('.ph').count(), path).toBe(0);
+    expect(await page.locator('[data-testid="product-card"]').count(), path).toBe(shopProducts.length);
+    for (const p of hiddenProducts) expect(await page.locator(`[data-product="${p.id}"]`).count(), p.id).toBe(0);
+  }
+  for (const p of shopProducts) {
+    await page.goto(`/ar/product/${p.id}`);
+    expect(await page.locator('.pdp-photo .ph').count(), p.id).toBe(0);
+  }
+  for (const p of hiddenProducts) expect((await request.get(`/ar/product/${p.id}`)).status(), p.id).toBe(404);
+  const sitemap = await (await request.get('/sitemap.xml')).text();
+  for (const p of hiddenProducts) expect(sitemap.includes(`/product/${p.id}`), p.id).toBe(false);
+});

@@ -355,9 +355,10 @@ html[lang='ar'] .hero h1 { min-height: 2.6em; }
 .grid { display: grid; gap: var(--s3); grid-template-columns: repeat(2, minmax(0, 1fr)); }
 @media (min-width: 768px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s4); } }
 @media (min-width: 1100px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-/* Home: all 10 products in one grid — 2 columns up to tablet, 5 on desktop, so every row is full. */
+/* Home: all products in one grid — 2 columns up to tablet; on desktop the column count divides the number of
+   products (set inline as --cols: 8 → 4, 10 → 5), so every row is full. */
 @media (min-width: 768px) and (max-width: 1099px) { .grid-all { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (min-width: 1100px) { .grid-all { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .grid-all { grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); } }
 .card { position: relative; display: flex; flex-direction: column; background: var(--surface); border-radius: var(--r-card); padding: var(--s2); border: 1px solid var(--line); transition: transform .15s var(--ease); }
 .card:active { transform: scale(.98); }
 .card .media { position: relative; aspect-ratio: 3 / 4; border-radius: var(--r-img); overflow: hidden; background: var(--deep); }
@@ -382,12 +383,11 @@ html[lang='ar'] .hero h1 { min-height: 2.6em; }
 .ph .ph-mark { width: 38%; max-width: 120px; aspect-ratio: 1; background: center / contain no-repeat; opacity: .2; }
 .ph.lg { font-size: clamp(18px, 3vw, 26px); }
 .ph.sm .ph-mark { display: none; }
-/* Photos paint as soon as they arrive (no opacity fade — a fade-in counts as layout shift and hides content);
-   the shimmer sits BEHIND the photo while it loads. */
-.img-load { position: absolute; inset: 0; isolation: isolate; background: var(--deep); }
+/* Photos paint as soon as they arrive, on a plain beige frame. No fade and no shimmer: both change what the
+   frame paints when the photo lands, which Chrome counts as layout shift (measured: CLS 0.26 → 0). */
+.img-load { position: absolute; inset: 0; background: var(--deep); }
 .skeleton { background: var(--deep); position: relative; overflow: hidden; border-radius: var(--r-img); }
-.img-load:not(.loaded)::after { z-index: -1; }
-.skeleton::after, .img-load:not(.loaded)::after { content: ''; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(251, 246, 238, .6), transparent); animation: shimmer 1.4s infinite; }
+.skeleton::after { content: ''; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(251, 246, 238, .6), transparent); animation: shimmer 1.4s infinite; }
 @keyframes shimmer { to { transform: translateX(100%); } }
 
 /* ======================== product page ======================== */
@@ -440,7 +440,10 @@ html[lang='ar'] .hero h1 { min-height: 2.6em; }
 .eta { display: flex; gap: 10px; align-items: center; padding: var(--s3) var(--s4); background: var(--bg); border-radius: var(--r-btn); font-size: 15px; }
 .total-line { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s3); }
 .total-line .t-value { font-size: 22px; font-weight: 700; display: inline-flex; gap: 8px; align-items: baseline; }
-.anim-num { display: inline-grid; overflow: hidden; vertical-align: bottom; }
+.anim-num { display: inline-block; white-space: nowrap; }
+.anim-num-in { display: inline-block; animation: num-in .18s var(--ease) both; }
+@keyframes num-in { from { transform: translateY(6px); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .anim-num-in { animation: none; } }
 .desktop-add { display: none; gap: var(--s2); }
 @media (min-width: 768px) { .desktop-add { display: flex; } }
 

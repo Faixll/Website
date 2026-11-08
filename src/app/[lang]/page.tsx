@@ -1,6 +1,6 @@
 import type { Lang } from '@/config/site';
 import { site } from '@/config/site';
-import { products } from '@/data/catalog';
+import { shopProducts as products } from '@/data/shop';
 import { branches } from '@/data/places';
 import { BranchCard } from '@/components/BranchCard';
 import { ButtonLink } from '@/components/Button';
@@ -75,7 +75,7 @@ export default async function Home({ params }: { params: Promise<{ lang: Lang }>
             <SectionTitle id="products-title">{t.ourProducts}</SectionTitle>
             <span className="muted small num">{t.nResults(products.length)}</span>
           </div>
-          <div className="grid grid-all" data-testid="product-grid">
+          <div className="grid grid-all" data-testid="product-grid" style={{ ['--cols' as string]: products.length % 5 === 0 ? 5 : products.length % 4 === 0 ? 4 : products.length % 3 === 0 ? 3 : 4 }}>
             {products.map((p, i) => <Reveal key={p.id} index={i}><ProductCard p={p} priority={i < 2} /></Reveal>)}
           </div>
         </section>

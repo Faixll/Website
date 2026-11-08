@@ -3,6 +3,7 @@
  * picture), P5 (visible on first paint), P6 (WhatsApp button), P7 (compact trust row), no sideways scrolling.
  */
 import { expect, test, type Page } from '@playwright/test';
+import { shopProducts } from '../src/data/shop';
 import { settle } from './helpers';
 
 const visibleCount = (page: Page, sel: string) =>
@@ -61,19 +62,20 @@ test.describe('P2: every piece rendered once (no search, no category chips)', ()
     expect(await visibleCount(page, '[data-testid="tabbar"]')).toBe(0);
   });
 
-  test('home shows all 10 products together in one grid, with no category titles', async ({ page }) => {
-    for (const [w, cols] of [[390, 2], [768, 2], [1280, 5]] as const) {
+  test('home shows every listed product together in one grid (full rows), with no category titles', async ({ page }) => {
+    const n = shopProducts.length;
+    for (const [w, cols] of [[390, 2], [768, 2], [1280, n % 5 === 0 ? 5 : 4]] as const) {
       await page.setViewportSize({ width: w, height: 900 });
       await page.goto('/ar');
       await settle(page);
       const grid = page.getByTestId('product-grid');
-      await expect(grid.locator('[data-testid="product-card"]')).toHaveCount(10);
+      await expect(grid.locator('[data-testid="product-card"]')).toHaveCount(n);
       expect(await page.locator('main h2:not(.sr-only)').evaluateAll((hs) => hs.map((h) => h.textContent).filter((t) => /حوار|خروف|تيس|عجل|برجر|وجبات/.test(t ?? ''))), `${w}`).toEqual([]);
       // Every row is full: the number of columns divides 10.
       const tops = await grid.locator(':scope > *').evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
       const perRow = tops.filter((t) => t === tops[0]).length;
       expect(perRow, `${w}`).toBe(cols);
-      expect(10 % perRow, `${w}`).toBe(0);
+      expect(n % perRow, `${w}`).toBe(0);
     }
   });
 });
