@@ -142,7 +142,7 @@ const ar = {
   opensAt: (t: string, day?: string) => (day ? `يفتح ${day} ${t}` : `يفتح ${t}`),
   call: 'اتصال',
   directions: 'الاتجاهات',
-  pickupHere: 'استلم من هنا',
+  pickupHere: 'استلم من فرعنا',
   hours: 'ساعات العمل',
   allBranches: 'تفاصيل الفرع',
 
@@ -523,7 +523,7 @@ const en: Dict = {
   opensAt: (t: string, day?: string) => (day ? `Opens ${day} ${t}` : `Opens ${t}`),
   call: 'Call',
   directions: 'Directions',
-  pickupHere: 'Pick up here',
+  pickupHere: 'Pick up from our branch',
   hours: 'Opening hours',
   allBranches: 'Store details',
 

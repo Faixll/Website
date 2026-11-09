@@ -5,13 +5,11 @@ import { branches } from '@/data/places';
 import { BranchCard } from '@/components/BranchCard';
 import { ButtonLink } from '@/components/Button';
 import { Hero } from '@/components/HomeParts';
-import { HomeReviews } from '@/components/HomeReviews';
 import { Reveal, SectionTitle } from '@/components/Motion';
 import { ProductCard } from '@/components/ProductCard';
 import { RewardsBand } from '@/components/RewardsBand';
 import { SiteHeader } from '@/components/SiteHeader';
 import { getDict } from '@/lib/i18n';
-import { getReviews } from '@/lib/reviews';
 import { fromPrice } from '@/lib/search';
 
 /** Approved reviews appear within 5 minutes. */
@@ -19,12 +17,12 @@ export const revalidate = 300;
 
 /**
  * Home: ticker (layout) → header → red hero (headline, delivery time, our specialties) → ALL products in one
- * grid (no category titles) → rewards band (only when switched on) → reviews → branches → footer (layout).
+ * grid (no category titles) → rewards band (only when switched on) → branches → footer (layout).
+ * (The "What our customers say" section was removed at the client's request; product pages keep their reviews.)
  */
 export default async function Home({ params }: { params: Promise<{ lang: Lang }> }) {
   const { lang } = await params;
   const t = getDict(lang);
-  const reviews = await getReviews();
 
   // Structured data: the product list with prices, so search engines can show them.
   const itemList = {
@@ -81,10 +79,6 @@ export default async function Home({ params }: { params: Promise<{ lang: Lang }>
         </section>
 
         <RewardsBand />
-
-        <section className="band-surface section" aria-label={t.reviewsHome}>
-          <div className="container"><HomeReviews data={reviews} /></div>
-        </section>
 
         <section className="band-deep section" aria-labelledby="branches">
           <div className="container">

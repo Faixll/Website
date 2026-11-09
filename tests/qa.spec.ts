@@ -203,3 +203,36 @@ test('no image placeholders: every product shown has a photo; products without o
   const sitemap = await (await request.get('/sitemap.xml')).text();
   for (const p of hiddenProducts) expect(sitemap.includes(`/product/${p.id}`), p.id).toBe(false);
 });
+
+test('client changes 2026-11-09: no reviews section on home, pickup wording, burger box name, whole/half carcass, struck-through old total, WhatsApp bottom-left', async ({ page }) => {
+  await page.setViewportSize(VIEWPORTS.phone);
+  for (const [path, title] of [['/ar', 'ماذا يقول عملاؤنا'], ['/en', 'What our customers say']] as const) {
+    await page.goto(path);
+    await settle(page);
+    expect(await page.getByText(title).count(), path).toBe(0);
+  }
+  // WhatsApp sits in the bottom-left corner in both languages.
+  for (const path of ['/ar', '/en']) {
+    await page.goto(path);
+    await settle(page);
+    const box = await page.getByTestId('whatsapp-fab').evaluate((e) => { e.style.transition = 'none'; e.style.transform = 'none'; const r = e.getBoundingClientRect(); return { x: r.x, y: r.y }; });
+    expect(box.x, path).toBeLessThan(40);
+    expect(box.y, path).toBeGreaterThan(600);
+  }
+  await page.goto('/ar/stores');
+  await settle(page);
+  await expect(page.getByText('استلم من فرعنا').first()).toBeVisible();
+  await page.goto('/en/product/burger-beef');
+  await settle(page);
+  await expect(page.locator('h1')).toHaveText('Burger Box');
+  for (const id of ['naimi-local', 'najdi-local', 'hawar-local']) {
+    await page.goto(`/ar/product/${id}`);
+    await settle(page);
+    await expect(page.locator('button[role="radio"][data-cut="whole"]'), id).toHaveText(/ذبيحة كاملة/);
+    await expect(page.locator('button[role="radio"][data-cut="half"]'), id).toHaveText(/نصف ذبيحة/);
+    await expect(page.locator('button[role="radio"][data-cut="curry"]'), id).toHaveText(/قطع صغيرة \(تيس\)/);
+  }
+  // The regular price in the total is visibly struck through.
+  const deco = await page.getByTestId('live-total').locator('s .anim-num-in').evaluate((e) => getComputedStyle(e).textDecorationLine);
+  expect(deco).toContain('line-through');
+});

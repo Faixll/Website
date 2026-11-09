@@ -259,8 +259,8 @@
       "type": "packed",
       "unit": "pack",
       "name": {
-        "en": "Beef Burger",
-        "ar": "برجر لحم بقر"
+        "en": "Burger Box",
+        "ar": "بوكس برجر"
       },
       "optionGroup": {
         "id": "pack",

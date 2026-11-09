@@ -27,11 +27,14 @@ export const categories: { id: CategoryId; name: L10n }[] = [
 
 /** Cutting styles for fresh meat. `extra` is added per kg (AED, VAT incl.); all free for now. */
 export const cuts = {
-  curry: { name: { ar: 'قطع صغيرة (مرق)', en: 'Small pieces (stew)' }, extra: 0 },
+  curry: { name: { ar: 'قطع صغيرة (تيس)', en: 'Small pieces (stew)' }, extra: 0 },
   large: { name: { ar: 'قطع كبيرة', en: 'Large pieces' }, extra: 0 },
   biryani: { name: { ar: 'تقطيع برياني', en: 'Biryani cut' }, extra: 0 },
   mandi: { name: { ar: 'تقطيع مندي', en: 'Mandi cut' }, extra: 0 },
   asis: { name: { ar: 'كما هي', en: 'As is' }, extra: 0 },
+  /** Sheep and hawar can also be bought as a whole or half carcass (priced per kg like the rest). */
+  whole: { name: { ar: 'ذبيحة كاملة', en: 'Whole carcass' }, extra: 0 },
+  half: { name: { ar: 'نصف ذبيحة', en: 'Half carcass' }, extra: 0 },
 } satisfies Record<string, { name: L10n; extra: number }>;
 
 export type CutId = keyof typeof cuts;
@@ -62,6 +65,8 @@ export type Product = {
 };
 
 const CUTS: CutId[] = ['curry', 'large', 'biryani', 'mandi'];
+/** Sheep and hawar: the same cuts plus a whole or half carcass. */
+const CARCASS_CUTS: CutId[] = [...CUTS, 'whole', 'half'];
 const perKg = { ar: 'للكيلو', en: 'Per kg' };
 const bone = { ar: 'العظم', en: 'Bone' };
 const packSize = { ar: 'حجم العبوة', en: 'Pack size' };
@@ -77,7 +82,7 @@ export const products: Product[] = [
       { id: 'bone-in', name: { ar: 'بعظم', en: 'With bone' }, price: 59, was: 69 },
       { id: 'boneless', name: { ar: 'بدون عظم', en: 'Boneless' }, price: 69, was: 79 },
     ],
-    cuts: CUTS,
+    cuts: CARCASS_CUTS,
   },
   /* ---------- Sheep ---------- */
   {
@@ -85,21 +90,21 @@ export const products: Product[] = [
     name: { ar: 'لحم خروف نعيمي محلي', en: 'Local Naimi Meat' },
     desc: { ar: 'لحم خروف نعيمي محلي طازج.', en: 'Fresh local Naimi lamb.' },
     sizes: [{ id: 'kg', name: perKg, price: 69, was: 79 }],
-    cuts: CUTS,
+    cuts: CARCASS_CUTS,
   },
   {
     id: 'najdi-local', category: 'sheep', unit: 'kg', byWeight: true, storage: 'fresh', stock: 'in',
     name: { ar: 'لحم خروف نجدي محلي', en: 'Local Najdi Meat' },
     desc: { ar: 'لحم خروف نجدي محلي طازج.', en: 'Fresh local Najdi lamb.' },
     sizes: [{ id: 'kg', name: perKg, price: 69, was: 79 }],
-    cuts: CUTS,
+    cuts: CARCASS_CUTS,
   },
   {
     id: 'harri-local', category: 'sheep', unit: 'kg', byWeight: true, storage: 'fresh', stock: 'in',
     name: { ar: 'لحم خروف حري محلي', en: 'Local Harri Meat' },
     desc: { ar: 'لحم خروف حري محلي طازج.', en: 'Fresh local Harri lamb.' },
     sizes: [{ id: 'kg', name: perKg, price: 75, was: 85 }],
-    cuts: CUTS,
+    cuts: CARCASS_CUTS,
   },
   /* ---------- Goat ---------- */
   {
@@ -147,8 +152,8 @@ export const products: Product[] = [
   },
   {
     id: 'burger-beef', category: 'burgers', unit: 'pack', stock: 'in',
-    name: { ar: 'برجر لحم بقر', en: 'Beef Burger' },
-    desc: { ar: 'برجر لحم بقر، بوكس 6 قطع.', en: 'Beef burgers, a box of 6.' },
+    name: { ar: 'بوكس برجر', en: 'Burger Box' },
+    desc: { ar: 'بوكس برجر ٦ قطع مع الخبز والخضار والجبن والصلصات.', en: 'Burger box: 6 patties with buns, vegetables, cheese and sauces.' },
     sizeLabel: packSize,
     sizes: [{ id: '6', name: { ar: 'بوكس ٦ قطعة', en: 'Box of 6' }, price: 50, was: 60 }],
     cuts: [],

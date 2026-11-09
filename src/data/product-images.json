@@ -39,16 +39,16 @@
       "ar": "أقراص برجر نيئة على ورق زبدة"
     },
     "burger-beef": {
-      "en": "Closed beef burger box with buns, lettuce, tomato, onion, cheese, sauces and beef patties beside it",
-      "ar": "بوكس برجر لحم بقري مغلق والمكونات بجانبه: خبز، خس، طماطم، بصل، جبن، صلصات وأقراص لحم"
+      "en": "Closed burger box with buns, lettuce, tomato, onion, cheese, sauces and patties beside it",
+      "ar": "بوكس برجر مغلق والمكونات بجانبه: خبز، خس، طماطم، بصل، جبن، صلصات وأقراص لحم"
     },
     "burger-beef-open": {
-      "en": "Open beef burger box: six patties, buns, lettuce, tomato, onion, cheese and two sauces",
-      "ar": "بوكس برجر لحم بقري مفتوح: ٦ أقراص لحم، خبز، خس، طماطم، بصل، جبن وصلصتان"
+      "en": "Open burger box: six patties, buns, lettuce, tomato, onion, cheese and two sauces",
+      "ar": "بوكس برجر مفتوح: ٦ أقراص لحم، خبز، خس، طماطم، بصل، جبن وصلصتان"
     },
     "burger-beef-ingredients": {
-      "en": "Open beef burger box with the ingredients flying around it",
-      "ar": "بوكس برجر لحم بقري مفتوح والمكونات تتطاير حوله"
+      "en": "Open burger box with the ingredients flying around it",
+      "ar": "بوكس برجر مفتوح والمكونات تتطاير حوله"
     },
     "kabsa-barriah-2": {
       "en": "Open Barriah kabsa kit for two: Naimi lamb, onions, garlic, cilantro, rice and whole spices",
