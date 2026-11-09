@@ -7,6 +7,9 @@ import type { Product } from '@/data/catalog';
 import manifest from '@/data/product-images.json';
 
 const available = new Set<string>(manifest.images);
+/** Replaced photos get a new URL (?v=N) so day-long caches never show the old photo. */
+const versions: Record<string, number> = manifest.versions;
+const srcOf = (key: string) => `/images/products/${key}.webp${versions[key] ? `?v=${versions[key]}` : ''}`;
 const illustrative = new Set<string>(manifest.illustrative);
 const alts = manifest.alt as Record<string, { ar: string; en: string }>;
 const galleries = manifest.gallery as Record<string, string[]>;
@@ -43,7 +46,7 @@ export function ProductImage({
   if (key) {
     return (
       <div className={`img-load${loaded ? ' loaded' : ''}`}>
-        <Image src={`/images/products/${key}.webp`} alt={alt} fill sizes={sizes} priority={priority}
+        <Image src={srcOf(key)} alt={alt} fill sizes={sizes} priority={priority}
           loading={priority ? undefined : 'lazy'} style={{ objectFit: 'cover' }} onLoad={() => setLoaded(true)} />
       </div>
     );

@@ -1,5 +1,5 @@
 {
-  "_note": "Written by scripts/process-images.mjs ('images'). 'alt' = image descriptions (from Albada_Product_Images.pdf). 'gallery' = extra photos shown on the product page. Add an id to 'illustrative' to show 'Illustrative image' on it.",
+  "_note": "Written by scripts/process-images.mjs ('images'). 'alt' = image descriptions (from Albada_Product_Images.pdf). 'gallery' = extra photos shown on the product page. Add an id to 'illustrative' to show 'Illustrative image' on it. 'versions' = bump a number when a photo is replaced, so cached copies (kept for a day) are not shown.",
   "images": [
     "burger-beef",
     "burger-beef-ingredients",
@@ -12,6 +12,12 @@
     "naimi-local",
     "najdi-local"
   ],
+  "versions": {
+    "hawar-local": 2,
+    "naimi-local": 2,
+    "najdi-local": 2,
+    "goat-local": 2
+  },
   "illustrative": [],
   "alt": {
     "hawar-local": {
