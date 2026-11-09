@@ -98,17 +98,25 @@ export function SlotPicker({ idPrefix = 'hero' }: { idPrefix?: string }) {
  * (the slot picker) and what we do best (the three specialties). Products follow directly below.
  */
 export function Hero() {
-  const { t } = useStore();
+  const { t, lang } = useStore();
   const words = t.heroTitle.split(' ');
   return (
-    <section className="hero" aria-labelledby="hero-title" data-testid="hero">
+    <section id="top" className="hero" aria-labelledby="hero-title" data-testid="hero">
       <div className="container hero-inner">
+        <p className="hero-pill"><Icon name="checkCircle" size={18} weight="fill" />{t.heroEyebrow}</p>
         <h1 id="hero-title" className="reveal-words">
           {words.map((w, i) => (
             <Fragment key={i}><span className="mask"><span className="word" style={{ ['--i' as string]: i }}>{w}</span></span>{i < words.length - 1 ? ' ' : ''}</Fragment>
           ))}
         </h1>
         <p className="sub reveal-after" style={{ ['--d' as string]: `${words.length * 60 + 120}ms` }}>{t.heroSub}</p>
+        <div className="hero-ctas">
+          <a href="#products" className="hero-btn primary">{t.browseProducts}<Icon name={lang === 'ar' ? 'arrowLeft' : 'arrowRight'} size={18} /></a>
+          <a href="#branch" className="hero-btn secondary">{t.branchInAlAin}</a>
+        </div>
+        <ol className="hero-steps">
+          {t.heroSteps.map((s, i) => <li key={s}><span className="num">{i + 1}</span>{s}</li>)}
+        </ol>
         <div className="picker" data-testid="delivery-card">
           <p className="p-title"><Icon name="clock" size={20} />{t.deliverWhen}</p>
           <SlotPicker />

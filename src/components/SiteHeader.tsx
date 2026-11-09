@@ -4,7 +4,7 @@ import { motion, useScroll } from 'motion/react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { site } from '@/config/site';
-import { LangToggle } from './Chrome';
+import { HeaderCart, LangToggle } from './Chrome';
 import { useScrollDirection } from './hooks';
 import { RewardsChip } from './Rewards';
 import { useStore } from './StoreProvider';
@@ -18,7 +18,7 @@ import { useStore } from './StoreProvider';
  * scrolls down and comes back on the way up (transform only).
  */
 export function SiteHeader() {
-  const { lang } = useStore();
+  const { lang, t } = useStore();
   const [compact, setCompact] = useState(false);
   const dir = useScrollDirection(240);
   const { scrollYProgress } = useScroll();
@@ -39,10 +39,17 @@ export function SiteHeader() {
             {/* One logo only: the client's master round logo (their README: header at 44–56 px), phone and desktop. */}
             <span className="mark" aria-hidden style={{ backgroundImage: `url(${site.brand.round})` }} />
           </Link>
-          <div style={{ flex: 1 }} />
+          {/* Wider than 700px: page links. Phones keep the bottom tab bar instead. */}
+          <nav className="header-nav" aria-label={t.mainNav}>
+            <a href={`/${lang}#top`}>{t.tabHome}</a>
+            <a href={`/${lang}#products`}>{t.ourProducts}</a>
+            <a href={`/${lang}#branch`}>{t.ourBranches}</a>
+            <a href="#contact">{t.contactUs}</a>
+          </nav>
           <div className="header-actions">
             <RewardsChip />
             <LangToggle />
+            <HeaderCart />
           </div>
         </div>
       </header>

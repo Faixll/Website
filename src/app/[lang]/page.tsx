@@ -80,7 +80,7 @@ export default async function Home({ params }: { params: Promise<{ lang: Lang }>
 
         <RewardsBand />
 
-        <section className="band-deep section" aria-labelledby="branches">
+        <section id="branch" className="band-deep section" aria-labelledby="branches">
           <div className="container">
             <div className="section-head">
               <SectionTitle id="branches">{t.ourBranches}</SectionTitle>

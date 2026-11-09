@@ -48,7 +48,7 @@ for (const [name, vp] of [['phone', VIEWPORTS.phone], ['desktop', VIEWPORTS.desk
 }
 
 test('all configured fonts are loaded (document.fonts)', async ({ page }) => {
-  const want = { ar: ['IBM_Plex_Sans_Arabic', 'Noto_Kufi_Arabic', 'Lalezar'], en: ['IBM_Plex_Sans', 'Playfair_Display'] } as const;
+  const want = { ar: ['IBM_Plex_Sans_Arabic', 'Noto_Kufi_Arabic', 'Cairo'], en: ['IBM_Plex_Sans', 'Playfair_Display'] } as const;
   for (const lang of ['ar', 'en'] as const) {
     await page.goto(`/${lang}`);
     await settle(page);

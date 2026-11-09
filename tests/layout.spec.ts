@@ -112,7 +112,7 @@ test.describe('P4/P5: hero and first paint', () => {
     await expect(hero.locator('h1')).toBeVisible();
     await expect(hero.getByTestId('delivery-card')).toBeVisible();
     await expect(hero.getByTestId('trust').locator(':scope > li')).toHaveCount(3);
-    expect(await hero.locator('img, video, picture, [data-testid="hero-media"], .hero-pill').count()).toBe(0);
+    expect(await hero.locator('img, video, picture, [data-testid="hero-media"]').count()).toBe(0);
   });
 
   test('without JavaScript every section and product card is fully visible (no opacity fade)', async ({ browser }) => {

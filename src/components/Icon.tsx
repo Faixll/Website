@@ -6,7 +6,7 @@
 import {
   BowlFood, CaretDown, Check, Clock, Cow, Envelope, Globe, Hamburger, House, InstagramLogo, Knife, Lock,
   MagnifyingGlass, MapPin, Minus, Phone, Plus, SealCheck, ShoppingBag, Snowflake, Storefront, Truck, User,
-  WhatsappLogo, X, Bell, Tag, ArrowSquareOut, CaretLeft, CaretRight, ArrowRight, Star, ChatCircleText, Gift, SignOut, Trash,
+  WhatsappLogo, X, CheckCircle, ArrowLeft, Bell, Tag, ArrowSquareOut, CaretLeft, CaretRight, ArrowRight, Star, ChatCircleText, Gift, SignOut, Trash,
 } from '@phosphor-icons/react/dist/ssr';
 import type { IconWeight } from '@phosphor-icons/react';
 
@@ -16,6 +16,7 @@ const phosphor = {
   plus: Plus, minus: Minus, check: Check, caretDown: CaretDown, cow: Cow, burger: Hamburger, bowl: BowlFood,
   close: X, globe: Globe, mail: Envelope, instagram: InstagramLogo, lock: Lock, store: Storefront, bell: Bell,
   tag: Tag, external: ArrowSquareOut, caretStart: CaretRight, caretEnd: CaretLeft,
+  checkCircle: CheckCircle, arrowLeft: ArrowLeft, arrowRight: ArrowRight,
   arrowEnd: ArrowRight, star: Star, chat: ChatCircleText, gift: Gift, signOut: SignOut, trash: Trash,
 };
 

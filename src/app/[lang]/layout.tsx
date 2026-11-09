@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { IBM_Plex_Sans, IBM_Plex_Sans_Arabic, Lalezar, Noto_Kufi_Arabic, Playfair_Display } from 'next/font/google';
+import { Cairo, IBM_Plex_Sans, IBM_Plex_Sans_Arabic, Noto_Kufi_Arabic, Playfair_Display } from 'next/font/google';
 import { notFound } from 'next/navigation';
 import { LANGS, site, type Lang } from '@/config/site';
 import { AccountProvider } from '@/components/AccountProvider';
@@ -19,7 +19,8 @@ const playfair = Playfair_Display({ subsets: ['latin'], weight: ['700', '800'], 
 const plex = IBM_Plex_Sans({ subsets: ['latin'], weight: ['400', '500', '600'], variable: '--font-plex', display: 'swap' });
 const plexAr = IBM_Plex_Sans_Arabic({ subsets: ['arabic', 'latin'], weight: ['400', '500', '600'], variable: '--font-plex-ar', display: 'swap' });
 const kufi = Noto_Kufi_Arabic({ subsets: ['arabic'], weight: ['700'], variable: '--font-kufi', display: 'swap' });
-const lalezar = Lalezar({ subsets: ['arabic'], weight: '400', variable: '--font-lalezar', display: 'swap' });
+// Arabic hero headline (client brief: Cairo 800).
+const cairo = Cairo({ subsets: ["arabic"], weight: ["800"], variable: "--font-cairo", display: "swap" });
 
 /** Only /ar and /en exist; anything else is a 404. */
 export const dynamicParams = false;
@@ -52,7 +53,7 @@ export default async function RootLayout({ children, params }: { children: React
   if (!isLang(lang)) notFound();
   const t = getDict(lang as Lang);
   // Load only the families each language uses.
-  const fonts = lang === 'ar' ? [plexAr, kufi, lalezar] : [plex, playfair];
+  const fonts = lang === 'ar' ? [plexAr, kufi, cairo] : [plex, playfair];
   return (
     <html lang={lang} dir={t.dir} className={fonts.map((f) => f.variable).join(' ')}>
       <body>

@@ -75,6 +75,19 @@ export function CartButton() {
   );
 }
 
+/** Header cart: a 44px dark round button with a cream cart and a red count badge; opens the same cart sheet. */
+export function HeaderCart() {
+  const { t, lang, ready, totals, setCartOpen } = useStore();
+  const n = ready ? totals.lines.length : 0;
+  return (
+    <button type="button" className="header-cart" data-testid="header-cart" onClick={() => setCartOpen(true)}
+      aria-label={`${t.tabCart}: ${t.itemsN(n)}, ${money(totals.subtotal, lang)}`}>
+      <Icon name="cart" size={22} />
+      {n > 0 && <span className="hc-count num" data-testid="header-cart-count">{n}</span>}
+    </button>
+  );
+}
+
 /* ---------------------------------------------------------------- add-to-cart flight (transform/opacity only) */
 export function flyToCart(from: HTMLElement | null) {
   if (!from || prefersReducedMotion()) return;

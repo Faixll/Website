@@ -236,3 +236,44 @@ test('client changes 2026-11-09: no reviews section on home, pickup wording, bur
   const deco = await page.getByTestId('live-total').locator('s .anim-num-in').evaluate((e) => getComputedStyle(e).textDecorationLine);
   expect(deco).toContain('line-through');
 });
+
+test('home brief 2026-11-09: header links (>700px), header cart with count, hero pill / buttons / 3 steps', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/ar');
+  await settle(page);
+  const nav = page.locator('.site-header .header-nav');
+  await expect(nav.locator('a')).toHaveText(['الرئيسية', 'منتجاتنا', 'فرعنا', 'تواصل معنا']);
+  for (const id of ['top', 'products', 'branch', 'contact']) await expect(page.locator(`#${id}`)).toHaveCount(1);
+  const link = nav.locator('a').first();
+  expect(await link.evaluate((e) => { const c = getComputedStyle(e); return [c.fontSize, c.fontWeight, c.color]; })).toEqual(['15px', '700', 'rgb(58, 47, 41)']);
+
+  const hero = page.getByTestId('hero');
+  await expect(hero.locator('.hero-pill')).toHaveText('ذبح حلال يومي');
+  await expect(hero.locator('h1')).toHaveText('لحوم طازجة وذبائح يومية، توصل لبابك');
+  const h1 = await hero.locator('h1').evaluate((e) => { const c = getComputedStyle(e); return [c.fontSize, c.fontWeight, c.color, c.fontFamily]; });
+  expect(h1.slice(0, 3)).toEqual(['54px', '800', 'rgb(246, 239, 228)']);
+  expect(h1[3]).toMatch(/cairo/i);
+  await expect(hero.locator('.hero-btn.primary')).toHaveText('تصفّح المنتجات');
+  await expect(hero.locator('.hero-btn.secondary')).toHaveText('فرعنا في العين');
+  expect((await hero.locator('.hero-btn.primary').boundingBox())!.height).toBe(48);
+  await expect(hero.locator('.hero-steps li')).toHaveText(['1اختر الوقت', '2أضف طلبك', '3ادفع']);
+
+  // Header cart: 44px round, shows the cart count and opens the cart.
+  const cart = page.getByTestId('header-cart');
+  const box = (await cart.boundingBox())!;
+  expect([box.width, box.height]).toEqual([44, 44]);
+  await expect(page.getByTestId('header-cart-count')).toHaveCount(0);
+  await page.goto('/ar/product/naimi-local');
+  await settle(page);
+  await page.locator('.desktop-add [data-testid="add-to-cart"]').click();
+  await expect(page.getByTestId('header-cart-count')).toHaveText('1');
+  await page.getByTestId('header-cart').click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+
+  // Phone: links hidden, headline 34px.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/ar');
+  await settle(page);
+  await expect(page.locator('.site-header .header-nav')).toBeHidden();
+  expect(await page.getByTestId('hero').locator('h1').evaluate((e) => getComputedStyle(e).fontSize)).toBe('34px');
+});

@@ -46,7 +46,7 @@ export function Footer({ lang }: { lang: Lang }) {
               <PayIcons />
             </div>
           </div>
-          <div>
+          <div id="contact">
             <h2>{t.contactUs}</h2>
             <ul>
               <li><a className="num ltr" href={`tel:${site.phone}`}>{phoneDisplay(site.phone)}</a></li>
