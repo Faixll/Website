@@ -13,24 +13,24 @@
     "najdi-local"
   ],
   "versions": {
-    "hawar-local": 2,
-    "naimi-local": 2,
-    "najdi-local": 2,
+    "hawar-local": 3,
+    "naimi-local": 3,
+    "najdi-local": 3,
     "goat-local": 2
   },
   "illustrative": [],
   "alt": {
     "hawar-local": {
-      "en": "Young camel (hawar) with a light cream coat",
-      "ar": "حوار (صغير الناقة) بلون كريمي فاتح"
+      "en": "Young camel (hawar) with a white-cream coat and a soft hump",
+      "ar": "حوار (صغير الناقة) بلون أبيض كريمي وسنام ناعم"
     },
     "naimi-local": {
-      "en": "Local Naimi sheep: white woolly body, dark brown head and neck",
-      "ar": "خروف نعيمي محلي: جسم أبيض صوفي ورأس ورقبة بنية داكنة"
+      "en": "Local Naimi sheep: thick cream wool, brown face and neck, white crown, long drooping ears",
+      "ar": "خروف نعيمي محلي: صوف كثيف كريمي، وجه ورقبة بنية، قمة الرأس بيضاء وأذنان طويلتان متدليتان"
     },
     "najdi-local": {
-      "en": "Local Najdi sheep: black woolly body, white head and legs",
-      "ar": "خروف نجدي محلي: جسم أسود صوفي ورأس وأرجل بيضاء"
+      "en": "Local Najdi sheep: black fleece, white head with long drooping ears, cream-white legs",
+      "ar": "خروف نجدي محلي: صوف أسود، رأس أبيض بأذنين طويلتين متدليتين وأرجل بيضاء كريمية"
     },
     "goat-local": {
       "en": "Local goat: black coat and long drooping ears",
