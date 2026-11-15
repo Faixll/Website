@@ -13,16 +13,16 @@
     "najdi-local"
   ],
   "versions": {
-    "hawar-local": 3,
+    "hawar-local": 4,
     "naimi-local": 3,
     "najdi-local": 3,
-    "goat-local": 2
+    "goat-local": 3
   },
   "illustrative": [],
   "alt": {
     "hawar-local": {
-      "en": "Young camel (hawar) with a white-cream coat and a soft hump",
-      "ar": "حوار (صغير الناقة) بلون أبيض كريمي وسنام ناعم"
+      "en": "Young camel (hawar) with a cream coat",
+      "ar": "حوار (صغير الناقة) بلون كريمي"
     },
     "naimi-local": {
       "en": "Local Naimi sheep: thick cream wool, brown face and neck, white crown, long drooping ears",
@@ -33,8 +33,8 @@
       "ar": "خروف نجدي محلي: صوف أسود، رأس أبيض بأذنين طويلتين متدليتين وأرجل بيضاء كريمية"
     },
     "goat-local": {
-      "en": "Local goat: black coat and long drooping ears",
-      "ar": "تيس عارضي محلي: لون أسود وأذنان طويلتان متدليتان"
+      "en": "Local goat: long black coat and long, speckled drooping ears",
+      "ar": "تيس محلي: شعر أسود طويل وأذنان طويلتان متدليتان مرقطتان"
     },
     "burger-meat": {
       "en": "Raw burger patties on parchment paper",
