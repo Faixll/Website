@@ -14,9 +14,9 @@
   ],
   "versions": {
     "hawar-local": 4,
-    "naimi-local": 3,
+    "naimi-local": 4,
     "najdi-local": 3,
-    "goat-local": 3
+    "goat-local": 4
   },
   "illustrative": [],
   "alt": {
@@ -25,16 +25,16 @@
       "ar": "حوار (صغير الناقة) بلون كريمي"
     },
     "naimi-local": {
-      "en": "Local Naimi sheep: thick cream wool, brown face and neck, white crown, long drooping ears",
-      "ar": "خروف نعيمي محلي: صوف كثيف كريمي، وجه ورقبة بنية، قمة الرأس بيضاء وأذنان طويلتان متدليتان"
+      "en": "Local Naimi sheep with small horns: thick cream wool, brown face and neck, white crown, drooping ears",
+      "ar": "خروف نعيمي محلي بقرنين صغيرين: صوف كثيف كريمي، وجه ورقبة بنية، قمة الرأس بيضاء وأذنان متدليتان"
     },
     "najdi-local": {
       "en": "Local Najdi sheep: black fleece, white head with long drooping ears, cream-white legs",
       "ar": "خروف نجدي محلي: صوف أسود، رأس أبيض بأذنين طويلتين متدليتين وأرجل بيضاء كريمية"
     },
     "goat-local": {
-      "en": "Local goat: long black coat and long, speckled drooping ears",
-      "ar": "تيس محلي: شعر أسود طويل وأذنان طويلتان متدليتان مرقطتان"
+      "en": "Local goat with small horns: long black coat and long, speckled drooping ears",
+      "ar": "تيس محلي بقرنين صغيرين: شعر أسود طويل وأذنان طويلتان متدليتان مرقطتان"
     },
     "burger-meat": {
       "en": "Raw burger patties on parchment paper",
