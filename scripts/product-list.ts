@@ -7,8 +7,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from '@playwright/test';
-import { categories, cuts, discountPct, products, wasPrice, type Product } from '../src/data/catalog';
-import { isListed } from '../src/data/shop';
+import { categories, cuts, discountPct, wasPrice, type Product } from '../src/data/catalog';
+// Only products that have a photo (the same list as the site); the others are left out until their photo arrives.
+import { shopProducts as products } from '../src/data/shop';
 import manifest from '../src/data/product-images.json';
 
 const OUT = 'docs/Albada_Product_List.pdf';
@@ -26,7 +27,6 @@ const unitText = (p: Product) => (p.byWeight ? { en: 'Sold by the kg (price per 
 function card(p: Product, n: number) {
   const src = photo(p.id);
   const extra = (gallery[p.id] ?? []).map(photo).filter(Boolean) as string[];
-  const listed = isListed(p.id);
   const cat = categories.find((c) => c.id === p.category)!.name;
   const u = unitText(p);
   const rows = p.sizes.map((s) => {
@@ -41,13 +41,12 @@ function card(p: Product, n: number) {
   return `<section class="card">
     <div class="media">
       <span class="num">${n}</span>
-      ${src ? `<img src="${src}" alt="">` : `<div class="nophoto">Photo coming<br><span class="ar">الصورة قريباً</span></div>`}
+      <img src="${src}" alt="">
       ${extra.length ? `<div class="thumbs">${extra.map((x) => `<img src="${x}" alt="">`).join('')}</div>` : ''}
     </div>
     <div class="info">
       <div class="tags"><span class="tag">${esc(cat.en)} · <span class="ar">${esc(cat.ar)}</span></span>
-        ${p.storage === 'fresh' ? '<span class="tag">Fresh · <span class="ar">طازج</span></span>' : ''}
-        ${listed ? '' : '<span class="tag warn">Not on the site yet (no photo) · <span class="ar">غير معروض حتى تصل الصورة</span></span>'}</div>
+        ${p.storage === 'fresh' ? '<span class="tag">Fresh · <span class="ar">طازج</span></span>' : ''}</div>
       <div class="names"><h2>${esc(p.name.en)}</h2><h2 class="ar">${esc(p.name.ar)}</h2></div>
       <div class="names desc"><p>${esc(p.desc.en)}</p><p class="ar">${esc(p.desc.ar)}</p></div>
       <div class="unit">${esc(u.en)} · <span class="ar">${esc(u.ar)}</span></div>
@@ -67,13 +66,11 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
   header .t { text-align: end; font-weight: 600; } header .t small { display: block; font-weight: 400; color: #6b5d55; }
   .card { display: grid; grid-template-columns: 52mm 1fr; gap: 6mm; padding: 5mm 0; border-bottom: 1px solid #e3d8c6; break-inside: avoid; }
   .media { position: relative; }
-  .media > img, .nophoto { width: 52mm; aspect-ratio: 3/4; object-fit: cover; border-radius: 3mm; display: block; }
-  .nophoto { background: #efe6d8; color: #8a7a6e; display: grid; place-items: center; text-align: center; font-weight: 600; }
+  .media > img { width: 52mm; aspect-ratio: 3/4; object-fit: cover; border-radius: 3mm; display: block; }
   .num { position: absolute; top: 2.5mm; left: 2.5mm; width: 7mm; height: 7mm; border-radius: 50%; background: #8E1B1B; color: #fff; font-weight: 700; display: grid; place-items: center; font-size: 9pt; }
   .thumbs { display: flex; gap: 2mm; margin-top: 2mm; } .thumbs img { width: 16mm; aspect-ratio: 3/4; object-fit: cover; border-radius: 1.5mm; }
   .tags { display: flex; flex-wrap: wrap; gap: 1.5mm; margin-bottom: 2mm; }
   .tag { font-size: 8pt; background: #F6EFE4; border-radius: 99px; padding: .6mm 2.5mm; }
-  .tag.warn { background: #fbe3e3; color: #8E1B1B; font-weight: 600; }
   .names { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; align-items: start; }
   .names .ar { text-align: right; }
   h2 { margin: 0; font-size: 13pt; }
